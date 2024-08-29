@@ -107,7 +107,7 @@ export class MessageHub {
         const [
             cborContent,
             cborAddr
-        ] = cbor.array;
+        ] = cborData.array;
 
         if(!(
             cborContent instanceof CborBytes &&
