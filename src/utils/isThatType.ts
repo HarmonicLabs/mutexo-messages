@@ -5,3 +5,7 @@ export function isByte( n: number | bigint ): boolean {
     
     return( Number.isSafeInteger( n ) && ( n >= 0 && n <= 255 ) );
 }
+
+export function areBytes( stuff: Uint8Array ) {
+    return( stuff instanceof Uint8Array );
+}
