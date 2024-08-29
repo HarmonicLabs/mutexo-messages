@@ -1,6 +1,6 @@
 import { maxBufferSize, maxCode, minCode } from '../utils/constants';
 import { CanBeCborString, Cbor, CborArray, CborBytes, CborObj, CborString, forceCborString } from '@harmoniclabs/cbor';
-import { isByte } from '../utils/isThatType';
+import { areBytes, isByte } from '../utils/isThatType';
 import { roDescr } from '../utils/roDescr';
 import { getCborBytesDescriptor } from '../utils/getCborBytesDescriptor';
 
@@ -28,11 +28,14 @@ export class MessageHub {
             Array.isArray( stuff ) && 
             stuff.length === 2 &&
             isByte( stuff[0] ) &&
-            ( stuff[0] >= minCode && stuff[0] <= maxCode ) &&
+            ( 
+                stuff[0] >= minCode && 
+                stuff[0] <= maxCode 
+            ) &&
             Array.isArray( stuff[1] ) &&
-            stuff[1].length === 2
-            // isByte( stuff[1][0] ) &&
-            // isByte( stuff[1][1] )
+            stuff[1].length === 2 &&
+            areBytes( stuff[1][0] ) &&
+            areBytes( stuff[1][1] )
         );
     }
 
