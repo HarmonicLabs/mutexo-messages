@@ -1,11 +1,14 @@
 import { maxBufferSize, maxCode, minCode } from '../utils/constants';
-import { CborArray, CborBytes, CborObj } from '@harmoniclabs/cbor';
+import { CanBeCborString, Cbor, CborArray, CborBytes, CborObj, CborString, forceCborString } from '@harmoniclabs/cbor';
 import { isByte } from '../utils/isThatType';
 import { roDescr } from '../utils/roDescr';
+import { getCborBytesDescriptor } from '../utils/getCborBytesDescriptor';
 
 export class MessageHub {
     readonly bufferSize: number;
     private buffer: CborObj[];
+
+    readonly cborBytes?: Uint8Array;
 
     constructor( size?: number ) {
         Object.defineProperties(
@@ -13,7 +16,8 @@ export class MessageHub {
                 maxSize: ( typeof size === "number" )? 
                     { value: size, ...roDescr } : 
                     { value: maxBufferSize, ...roDescr },
-                bufferSize: { value: [], ...roDescr }   
+                bufferSize: { value: [], ...roDescr },
+                cborBytes: getCborBytesDescriptor()
             }
         );
     }
@@ -41,7 +45,12 @@ export class MessageHub {
         }
     }
 
-    toCbor( message: any ): CborObj {
+    toCbor(): CborString
+    {
+        return new CborString( this.toCborBytes() );
+    }
+
+    toCborObj( message: any ): CborArray {
         if( this.isValidMessage( message ) ) {
             var newMessage = new CborArray([
                 new CborBytes( message[0] ),
@@ -59,7 +68,24 @@ export class MessageHub {
         }
     }
 
-    fromCbor( cbor: CborObj ): Array<any> {
+    toCborBytes(): Uint8Array
+    {
+        if(!( this.cborBytes instanceof Uint8Array ))
+        {
+            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
+            this.cborBytes = Cbor.encode( this.toCborObj() ).toBuffer();
+        }
+
+        return Uint8Array.prototype.slice.call( this.cborBytes );
+    }
+
+    static fromCbor( cbor: CanBeCborString ): Array<any>
+    {
+        const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
+        return MessageHub.fromCborObj( Cbor.parse( bytes ), bytes );
+    }
+
+    static fromCborObj( cbor: CborObj, _originalBytes?: Uint8Array ): Array<any> {
         if(!(
             cbor instanceof CborArray &&
             cbor.array.length === 2
@@ -86,10 +112,10 @@ export class MessageHub {
         )) throw new Error("invalid message cbor");
         
         return [
-            cborTypeCode.bytes,
+            cborTypeCode.bytes as Uint8Array,
             [ 
-                cborContent.bytes, 
-                cborAddr.bytes 
+                cborContent.bytes as Uint8Array, 
+                cborAddr.bytes as Uint8Array
             ]
         ];
     }
