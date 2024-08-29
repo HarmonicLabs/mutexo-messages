@@ -1,17 +1,74 @@
-msg = [ type, data ]
 
-type = byte
-0: Free
-1: Lock
-2: Input
-3: Output
-4: Success
-5: Failure
-6: Close
-7: Error
+; messages (or events) sent from the server to the client
+msg
+    = msgFree
+    \ msgLock
+    \ msgInput
+    \ msgOutput
+    \ msgSuccess
+    \ msgFailure
+    \ msgClose
+    \ msgError;
 
-data = [ content, addr ]
+clientReq =  clientReqFree \ clientReqLock;
 
-content = bytes
+msgFree    = [ 0, utxoRef, addr ]
+msgLock    = [ 1, utxoRef, addr ]
+msgInput   = [ 2, utxoRef, addr, txHash ]; txHash of the tx that spent the utxo
+msgOutput  = [ 3, utxoRef, addr ];
+msgSuccess = [ 4, successData ];
+msgFailure = [ 5, failureData ];
+msgClose   = [ 6 ];
+msgError   = [ 7, errorCode ];
 
-addr = bytes
+clientReqFree = [ 0, [ + utxoRef ] ];
+clientReqLock = [
+    1,
+    [ + utxoRef ], ; utxos to lock
+    ? uint; (optional) number of required utxos to lock in order to succeed, defaults to `1`
+];
+clientSub = [ 2, eventType, [ * filter ] ];
+clientUnsub = [ 3, eventType, [ * filter ] ];
+
+eventType = uint .size 1 ; unsigned integer 1 byte
+; 0: Free
+; 1: Lock
+; 2: Input
+; 3: Output
+; 4: Success
+; 5: Failure
+; 6: Close
+; 7: Error
+
+filter
+    = [ 0, addr ]
+    \ [ 1, utxoRef ]
+
+failureData = 
+    [ 0, [* utxoRef] ]; no utxos where freed
+
+successData = 
+    [ 0, [+ utxoRef] ]; utxos where freed
+
+errorCode = (
+    0 ; not authenticated
+    \ 1 ; missing Ip
+    \ 2 ; invalid auth token
+    \ 3 ; too many requests, rate limited
+    \ 4 ; address is not followed
+    \ 5 ; utxo not found
+    \ 6 ; unkown event to subscribe by address
+    \ 7 ; unkown event to subscribe by utxoRef
+    \ 8 ; unkown event to un-subscribe by address
+    \ 9 ; unkown event to un-subscribe by utxoRef
+    \ 10 ; unsub message sent; but no event specified
+)
+
+data = [ content, addr ];
+
+utxoRef = [ hash32, uint ]
+
+txHash = hash32;
+
+hash32 = bytes .size 32;
+addr = bytes; according to the cardano-ledger cddl (babbage)
