@@ -1,0 +1,26 @@
+msg = [ type, data ]
+
+type        = 
+    Free    / 
+    Lock    / 
+    Input   / 
+    Output  / 
+    Success / 
+    Failure / 
+    Close   / 
+    Error
+
+; 0: Free
+; 1: Lock
+; 2: Input
+; 3: Output
+; 4: Success
+; 5: Failure
+; 6: Close
+; 7: Error
+
+data = [ content, addr ]
+
+content = text
+
+addr = bytes
