@@ -26,9 +26,9 @@ export class MessageHub {
             isByte( stuff[0] ) &&
             ( stuff[0] >= minCode && stuff[0] <= maxCode ) &&
             Array.isArray( stuff[1] ) &&
-            stuff[1].length === 2 &&
-            isByte( stuff[1][0] ) &&
-            isByte( stuff[1][1] )
+            stuff[1].length === 2
+            // isByte( stuff[1][0] ) &&
+            // isByte( stuff[1][1] )
         );
     }
 
