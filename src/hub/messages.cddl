@@ -21,6 +21,7 @@ msgFailure = [ 5, failureData ];
 msgClose   = [ 6 ];
 msgError   = [ 7, errorCode ];
 
+; messages sent fromthe client to the server
 clientReqFree = [ 0, [ + utxoRef ] ];
 clientReqLock = [
     1,
@@ -44,11 +45,13 @@ filter
     = [ 0, addr ]
     \ [ 1, utxoRef ]
 
-failureData = 
-    [ 0, [* utxoRef] ]; no utxos where freed
+failureData
+    = [ 0, [* utxoRef] ]; no utxos where freed, sending back utxo requested
+    \ [ 1, [* utxoRef] ]; no utxos where locked, sending back utxo requested
 
-successData = 
-    [ 0, [+ utxoRef] ]; utxos where freed
+successData 
+    = [ 0, [+ utxoRef] ]; utxos where freed
+    \ [ 1, [+ utxoRef] ]; utxos where locked
 
 errorCode = (
     0 ; not authenticated
@@ -63,8 +66,6 @@ errorCode = (
     \ 9 ; unkown event to un-subscribe by utxoRef
     \ 10 ; unsub message sent; but no event specified
 )
-
-data = [ content, addr ];
 
 utxoRef = [ hash32, uint ]
 
