@@ -7,7 +7,7 @@ import { MessageClose, IMessageClose } from "./messages/MessageClose";
 import { MessageError, IMessageError } from "./messages/MessageError";
 import { MessageFree, IMessageFree } from "./messages/MessageFree";
 import { MessageLock, IMessageLock } from "./messages/MessageLock";
-import { maxTypeCode, minTypeCode } from "./utils/constants";
+import { MessageTypeCodes } from "./utils/constants";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { isByte } from "./utils/isThatType";
 
@@ -52,9 +52,8 @@ export function isIMutexoMessage( stuff: any ): stuff is IMutexoMessage
 {
     return(
         isObject( stuff ) &&
-        isByte( stuff.type ) &&
-        stuff.type >= minTypeCode &&
-        stuff.type <= maxTypeCode
+        isByte( stuff.eventType ) &&
+        Object.values( MessageTypeCodes ).includes( stuff.eventType )
     );
 }
 

@@ -3,11 +3,11 @@ import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { isByte } from "../utils/isThatType";
 import { roDescr } from "../utils/roDescr";
-import { EventCode } from "../utils/types";
+import { Code } from "../utils/types";
 
 export interface IMessageClose
 {
-    eventType: EventCode
+    eventType: Code
 }
 
 function isIMessageClose( stuff: any ): stuff is IMessageClose
@@ -22,7 +22,7 @@ function isIMessageClose( stuff: any ): stuff is IMessageClose
 export class MessageClose
     implements ToCbor, ToCborObj, IMessageClose 
 {
-    readonly eventType: EventCode;
+    readonly eventType: Code;
 
     readonly cborBytes?: Uint8Array | undefined;
 
@@ -85,7 +85,7 @@ export class MessageClose
         const originalWerePresent = _originalBytes instanceof Uint8Array; 
         _originalBytes = _originalBytes instanceof Uint8Array ? _originalBytes : Cbor.encode( cbor ).toBuffer();
 
-        const hdr = new MessageClose({ eventType: Number( cborEventType.num ) as EventCode });
+        const hdr = new MessageClose({ eventType: Number( cborEventType.num ) as Code });
 
         if( originalWerePresent )
         {

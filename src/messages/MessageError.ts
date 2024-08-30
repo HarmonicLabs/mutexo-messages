@@ -1,15 +1,15 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
-import { maxErrorCode, minErrorCode } from "../utils/constants";
-import { ErrorCode, EventCode } from "../utils/types";
 import { isObject } from "@harmoniclabs/obj-utils";
+import { ErrorCodes } from "../utils/constants";
 import { isByte } from "../utils/isThatType";
 import { roDescr } from "../utils/roDescr";
+import { Code } from "../utils/types";
 
 export interface IMessageError
 {
-    eventType: EventCode
-    errorType: ErrorCode
+    eventType: Code
+    errorType: Code
 }
 
 function isIMessageError( stuff: any ): stuff is IMessageError
@@ -19,18 +19,15 @@ function isIMessageError( stuff: any ): stuff is IMessageError
         isByte( stuff.eventType ) &&
         stuff.eventType === 7 &&
         isByte( stuff.errorType ) &&
-        (
-            stuff.errorType >= minErrorCode &&
-            stuff.errorType <= maxErrorCode
-        )
+        Object.values( ErrorCodes ).includes( stuff.errorType )
     );
 }
 
 export class MessageError
     implements ToCbor, ToCborObj, IMessageError 
 {
-    readonly eventType: EventCode;
-    readonly errorType: ErrorCode;
+    readonly eventType: Code;
+    readonly errorType: Code;
 
     readonly cborBytes?: Uint8Array | undefined;
     
@@ -100,8 +97,8 @@ export class MessageError
         _originalBytes = _originalBytes instanceof Uint8Array ? _originalBytes : Cbor.encode( cbor ).toBuffer();
 
         const hdr = new MessageError({ 
-            eventType: Number( cborEventType.num ) as EventCode,
-            errorType: Number( cborErrorType.num ) as ErrorCode
+            eventType: Number( cborEventType.num ) as Code,
+            errorType: Number( cborErrorType.num ) as Code
         });
 
         if( originalWerePresent )
