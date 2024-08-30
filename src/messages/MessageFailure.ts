@@ -1,12 +1,12 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
-import { UTxORefFromCborObj } from "../utils/fromCborObj";
 import { isByte, isUTxORef } from "../utils/isThatType";
 import { FailureTypeCodes } from "../utils/constants";
 import { UTxORefToCborObj } from "../utils/toCborObj";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { Code, UTxORef } from "../utils/types";
 import { roDescr } from "../utils/roDescr";
+import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 
 type FailureData = { failureType: Code, payload: UTxORef[] }
 
@@ -49,7 +49,7 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
 
     return {
         failureType: Number( cborFailureType.num ) as Code,
-        payload: cborPayload.array.map( ( cborUtxo ) => UTxORefFromCborObj( cborUtxo ) )
+        payload: cborPayload.array.map( ( cborUtxo ) => TxOutRef.fromCborObj( cborUtxo ) )
     } as FailureData;
 }
 
