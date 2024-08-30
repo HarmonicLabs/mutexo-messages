@@ -1,1 +1,2 @@
-export * from './hub/MessageHub';
+export * from './MutexoMessage';
+export * from './messages';
