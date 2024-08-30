@@ -46,12 +46,12 @@ filter
     \ [ 1, utxoRef ]
 
 failureData
-    = [ 0, [* utxoRef] ]; no utxos where freed, sending back utxo requested
-    \ [ 1, [* utxoRef] ]; no utxos where locked, sending back utxo requested
+    = [ 0, [* utxoRef] ]; no utxos were freed, sending back utxo requested
+    \ [ 1, [* utxoRef] ]; no utxos were locked, sending back utxo requested
 
 successData 
-    = [ 0, [+ utxoRef] ]; utxos where freed
-    \ [ 1, [+ utxoRef] ]; utxos where locked
+    = [ 0, [+ utxoRef] ]; utxos were freed
+    \ [ 1, [+ utxoRef] ]; utxos were locked
 
 errorType = uint .size 1 ; unsigned integer 1 byte
 errorType = (
