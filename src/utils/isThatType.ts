@@ -1,4 +1,12 @@
-const hexChars = Object.freeze( Array.from( "0123456789abcdef" ) );
+import { isObject } from "@harmoniclabs/obj-utils";
+import { hexChars } from "./constants";
+
+export function isHex( stuff: string ): boolean 
+{
+    if(!( typeof stuff === "string" ))  return false;
+
+    return Array.from( stuff.toLowerCase() ).every( ( char ) => hexChars.includes( char ) );
+}
 
 export function isBoolean( stuff: any ): boolean 
 {
@@ -16,21 +24,6 @@ export function isHash32( stuff: any ): boolean
         isHash( stuff ) &&
         stuff.length === 32
     );
-}
-
-export function isHash28( stuff: any ): boolean 
-{
-    return( 
-        isHash( stuff ) &&
-        stuff.length === 28
-    );
-}
-
-export function isHex( stuff: string ): boolean 
-{
-    if(!( typeof stuff === "string" ))  return false;
-
-    return Array.from( stuff ).every( ( char ) => hexChars.includes( char ) );
 }
 
 function isThatSize( stuff: any, pow: number ): boolean 
@@ -66,4 +59,13 @@ export function isWord32( stuff: any ): boolean
 export function isWord64( stuff: any ): boolean 
 {
     return isThatSize( stuff, 64 );
+}
+
+export function isUTxORef( stuff: any ): boolean 
+{
+    return(
+        isObject( stuff ) &&
+        isHash32( stuff.hash ) &&
+        isWord64( stuff.index )
+    );
 }
