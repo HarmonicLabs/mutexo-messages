@@ -1,7 +1,5 @@
 import { CanBeCborString, Cbor, CborArray, CborBytes, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
-import { isByte, isUTxORef } from "../utils/isThatType";
-import { UTxORefToCborObj } from "../utils/toCborObj";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { Code, UTxORef } from "../utils/types";
 import { roDescr } from "../utils/roDescr";

@@ -21,6 +21,12 @@ msgFailure = [ 5, failureData ];
 msgClose   = [ 6 ];
 msgError   = [ 7, errorType ];
 
+clientReq
+    = clientReqFree
+    \ clientReqLock
+    \ clientSub
+    \ clientUnsub
+
 ; messages sent from the client to the server
 clientReqFree = [ 0, [ + utxoRef ] ];
 clientReqLock = [
