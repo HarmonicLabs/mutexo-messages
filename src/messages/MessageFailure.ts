@@ -1,22 +1,19 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
-import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
-import { isByte, isUTxORef } from "../utils/isThatType";
 import { FailureTypeCodes } from "../utils/constants";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { Code, UTxORef } from "../utils/types";
-import { roDescr } from "../utils/roDescr";
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 
-type FailureData = { failureType: Code, payload: UTxORef[] }
+const MSG_FAILURE_EVENT_TYPE = 5;
+
+type FailureData = { failureType: number, payload: TxOutRef[] }
 
 function isFailureData( stuff: any ): stuff is FailureData
 {
     return(
         isObject( stuff ) &&
-        isByte( stuff.failureType ) &&
-        Object.values( FailureTypeCodes ).includes( stuff.failureType ) &&
+        typeof FailureTypeCodes[ stuff.failureType ] === "string" &&
         Array.isArray( stuff.payload ) &&
-        stuff.payload.every( isUTxORef )
+        stuff.payload.every((thing: any) => thing instanceof TxOutRef )
     );
 }
 
@@ -47,14 +44,13 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
     )) throw new Error( "invalid cbor for `FailureData`" );
 
     return {
-        failureType: Number( cborFailureType.num ) as Code,
+        failureType: Number( cborFailureType.num ),
         payload: cborPayload.array.map( ( cborUtxo ) => TxOutRef.fromCborObj( cborUtxo ) )
     } as FailureData;
 }
 
 export interface IMessageFailure
 {
-    eventType: Code
     failureData: FailureData
 }
 
@@ -62,8 +58,6 @@ function isIMessageFailure( stuff: any ): stuff is IMessageFailure
 {
     return(
         isObject( stuff ) &&
-        isByte( stuff.eventType ) &&
-        stuff.eventType === 5 &&
         isFailureData( stuff.failureData )
     );
 }
@@ -71,22 +65,13 @@ function isIMessageFailure( stuff: any ): stuff is IMessageFailure
 export class MessageFailure
     implements ToCbor, ToCborObj, IMessageFailure 
 {
-    readonly eventType: Code;
     readonly failureData: FailureData;
-
-    readonly cborBytes?: Uint8Array | undefined;
 
     constructor( stuff : IMessageFailure )
     {
         if(!( isIMessageFailure( stuff ) )) throw new Error( "invalid `MessageFailure` data provided" );
 
-        Object.defineProperties(
-            this, {
-                eventType: { value: 5, ...roDescr },
-                failureData: { value: stuff.failureData, ...roDescr },
-                cborBytes: getCborBytesDescriptor(),
-            }
-        );
+        this.failureData = stuff.failureData;
     }
 
     toCbor(): CborString
@@ -99,33 +84,27 @@ export class MessageFailure
         if(!( isIMessageFailure( this ) )) throw new Error( "invalid `MessageFailure` data provided" );
 
         return new CborArray([
-            new CborUInt( this.eventType ),
+            new CborUInt( MSG_FAILURE_EVENT_TYPE ),
             failureDataToCborObj( this.failureData )
         ]);
     }
 
     toCborBytes(): Uint8Array
     {
-        if(!( this.cborBytes instanceof Uint8Array ))
-        {
-            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
-            this.cborBytes = Cbor.encode( this.toCborObj() ).toBuffer();
-        }
-
-        return Uint8Array.prototype.slice.call( this.cborBytes );
+        return this.toCbor().toBuffer();
     }
 
     static fromCbor( cbor: CanBeCborString ): MessageFailure
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageFailure.fromCborObj( Cbor.parse( bytes ), bytes );
+        return MessageFailure.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj( cbor: CborObj, _originalBytes?: Uint8Array | undefined ): MessageFailure
+    static fromCborObj( cbor: CborObj ): MessageFailure
     {
         if(!(
             cbor instanceof CborArray &&
-            cbor.array.length === 2
+            cbor.array.length >= 2
         )) throw new Error( "invalid cbor for `MessageFailure`" );
 
         const [
@@ -135,23 +114,12 @@ export class MessageFailure
 
         if(!( 
             cborEventType instanceof CborUInt &&
+            Number( cborEventType.num ) === MSG_FAILURE_EVENT_TYPE &&
             cborFailureData instanceof CborArray
         )) throw new Error( "invalid cbor for `MessageFailure`" );
 
-        const originalWerePresent = _originalBytes instanceof Uint8Array; 
-        _originalBytes = _originalBytes instanceof Uint8Array ? _originalBytes : Cbor.encode( cbor ).toBuffer();
-
-        const hdr = new MessageFailure({ 
-            eventType: Number( cborEventType.num ) as Code,
-            failureData: failureDataFromCborObj( cborFailureData ) as FailureData
+        return new MessageFailure({ 
+            failureData: failureDataFromCborObj( cborFailureData )
         });
-
-        if( originalWerePresent )
-        {
-            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
-            hdr.cborBytes = _originalBytes;
-        }
-
-        return hdr;
     }
 }

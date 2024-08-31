@@ -11,7 +11,9 @@ export enum MessageTypeCodes {
     Error                   = 7
 }
 
-export enum ErrorCodes {
+Object.freeze( MessageTypeCodes );
+
+export enum ErrorCode {
     NotAuth                 = 0, 
     MissingIP               = 1, 
     InvalidAuthToken        = 2, 
@@ -25,7 +27,11 @@ export enum ErrorCodes {
     UnsubMessage            = 10
 }
 
+Object.freeze( ErrorCode );
+
 export enum FailureTypeCodes {
     NoUTxOFreed             = 0, 
     NoUTxOLocked            = 1, 
 }
+
+Object.freeze( FailureTypeCodes );

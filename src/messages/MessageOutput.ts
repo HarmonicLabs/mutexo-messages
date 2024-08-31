@@ -1,12 +1,8 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
-import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { Code } from "../utils/types";
-import { roDescr } from "../utils/roDescr";
 import { Address, isITxOutRef, TxOut, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 
 export interface IMessageOutput {
-    eventType: Code,
     utxoRef: TxOutRef,
     addr: Address
 }
@@ -23,7 +19,6 @@ function isIMessageOutput(stuff: any): stuff is IMessageOutput {
 export class MessageOutput
     implements ToCbor, ToCborObj, IMessageOutput
 {
-    readonly eventType: Code;
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
@@ -32,45 +27,34 @@ export class MessageOutput
     constructor(stuff: IMessageOutput) {
         if (!(isIMessageOutput(stuff))) throw new Error("invalid `MessageOutput` data provided");
 
-        Object.defineProperties(
-            this, {
-                eventType: { value: 3, ...roDescr },
-                cborBytes: getCborBytesDescriptor(),
-                utxoRef: { value: new TxOutRef( stuff.utxoRef ), ...roDescr }, 
-                addr: { value: stuff.addr, ...roDescr }
-            }
-        );
+        this.utxoRef = new TxOutRef( stuff.utxoRef );
+        this.addr = stuff.addr;
     }
 
     toCbor(): CborString {
-        return new CborString(this.toCborBytes());
+        return Cbor.encode(this.toCborObj());
     }
 
     toCborObj(): CborArray {
         if (!(isIMessageOutput(this))) throw new Error("invalid `MessageOutput` data provided");
 
         return new CborArray([
-            new CborUInt(this.eventType),
+            new CborUInt( 3 ),
             this.utxoRef.toCborObj(),
             this.addr.toCborObj()
         ]);
     }
 
     toCborBytes(): Uint8Array {
-        if (!(this.cborBytes instanceof Uint8Array)) {
-            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
-            this.cborBytes = Cbor.encode(this.toCborObj()).toBuffer();
-        }
-
-        return Uint8Array.prototype.slice.call(this.cborBytes);
+        return this.toCbor().toBuffer();
     }
 
     static fromCbor(cbor: CanBeCborString): MessageOutput {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString(cbor).toBuffer();
-        return MessageOutput.fromCborObj(Cbor.parse(bytes), bytes);
+        return MessageOutput.fromCborObj(Cbor.parse(bytes));
     }
 
-    static fromCborObj(cbor: CborObj, _originalBytes?: Uint8Array | undefined): MessageOutput {
+    static fromCborObj(cbor: CborObj): MessageOutput {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length === 3 &&
@@ -84,20 +68,9 @@ export class MessageOutput
             cborAddr
         ] = cbor.array;
 
-        const originalWerePresent = _originalBytes instanceof Uint8Array;
-        _originalBytes = _originalBytes instanceof Uint8Array ? _originalBytes : Cbor.encode(cbor).toBuffer();
-
-        const hdr = new MessageOutput({
-            eventType: Number(cborEventType.num) as Code,
+        return new MessageOutput({
             utxoRef: TxOutRef.fromCborObj(cborUTxORef),
             addr: Address.fromCborObj(cborAddr)
         });
-
-        if (originalWerePresent) {
-            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
-            hdr.cborBytes = _originalBytes;
-        }
-
-        return hdr;
     }
 }

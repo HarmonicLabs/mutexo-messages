@@ -1,82 +1,60 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
-import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { ErrorCodes } from "../utils/constants";
-import { isByte } from "../utils/isThatType";
-import { roDescr } from "../utils/roDescr";
-import { Code } from "../utils/types";
+import { ErrorCode } from "../utils/constants";
+
+const MSG_ERROR_EVENT_TYPE = 7; 
 
 export interface IMessageError
 {
-    eventType: Code
-    errorType: Code
+    errorType: ErrorCode
 }
 
 function isIMessageError( stuff: any ): stuff is IMessageError
 {
     return(
         isObject( stuff ) &&
-        isByte( stuff.eventType ) &&
-        stuff.eventType === 7 &&
-        isByte( stuff.errorType ) &&
-        Object.values( ErrorCodes ).includes( stuff.errorType )
+        Number.isSafeInteger( stuff.errorType ) &&
+        typeof ErrorCode[ stuff.errorType ] === "string"
     );
 }
 
 export class MessageError
     implements ToCbor, ToCborObj, IMessageError 
 {
-    readonly eventType: Code;
-    readonly errorType: Code;
+    readonly errorType: ErrorCode;
 
-    readonly cborBytes?: Uint8Array | undefined;
-    
     constructor( stuff : IMessageError )
     {
         if(!( isIMessageError( stuff ) )) throw new Error( "invalid `MessageError` data provided" );
 
-        Object.defineProperties(
-            this, {
-                eventType: { value: 7, ...roDescr },
-                errorType: { value: stuff.errorType, ...roDescr },
-                cborBytes: getCborBytesDescriptor(),
-            }
-        );
+        this.errorType = stuff.errorType;
     }
 
     toCbor(): CborString
     {
         return new CborString( this.toCborBytes() );
     }
-
     toCborObj(): CborArray
     {
         if(!( isIMessageError( this ) )) throw new Error( "invalid `MessageError` data provided" );
 
         return new CborArray([
-            new CborUInt( this.eventType ),
+            new CborUInt( MSG_ERROR_EVENT_TYPE ),
             new CborUInt( this.errorType )
         ]);
     }
-
     toCborBytes(): Uint8Array
     {
-        if(!( this.cborBytes instanceof Uint8Array ))
-        {
-            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
-            this.cborBytes = Cbor.encode( this.toCborObj() ).toBuffer();
-        }
-
-        return Uint8Array.prototype.slice.call( this.cborBytes );
+        return this.toCbor().toBuffer();
     }
 
     static fromCbor( cbor: CanBeCborString ): MessageError
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageError.fromCborObj( Cbor.parse( bytes ), bytes );
+        return MessageError.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj( cbor: CborObj, _originalBytes?: Uint8Array | undefined ): MessageError
+    static fromCborObj( cbor: CborObj ): MessageError
     {
         if(!(
             cbor instanceof CborArray &&
@@ -90,22 +68,13 @@ export class MessageError
 
         if(!( 
             cborEventType instanceof CborUInt &&
-            cborErrorType instanceof CborUInt
+            cborErrorType instanceof CborUInt &&
+            Number(cborEventType.num) === MSG_ERROR_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageError`" );
 
-        const originalWerePresent = _originalBytes instanceof Uint8Array; 
-        _originalBytes = _originalBytes instanceof Uint8Array ? _originalBytes : Cbor.encode( cbor ).toBuffer();
-
         const hdr = new MessageError({ 
-            eventType: Number( cborEventType.num ) as Code,
-            errorType: Number( cborErrorType.num ) as Code
+            errorType: Number( cborErrorType.num ) as ErrorCode
         });
-
-        if( originalWerePresent )
-        {
-            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
-            hdr.cborBytes = _originalBytes;
-        }
 
         return hdr;
     }

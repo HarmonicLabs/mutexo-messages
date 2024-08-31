@@ -1,12 +1,10 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
-import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { Code } from "../utils/types";
-import { roDescr } from "../utils/roDescr";
 import { Address, isITxOutRef, TxOut, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 
+const MSG_LOCK_EVENT_TYPE = 1;
+
 export interface IMessageLock {
-    eventType: Code,
     utxoRef: TxOutRef,
     addr: Address
 }
@@ -23,7 +21,6 @@ function isIMessageLock(stuff: any): stuff is IMessageLock {
 export class MessageLock
     implements ToCbor, ToCborObj, IMessageLock
 {
-    readonly eventType: Code;
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
@@ -32,14 +29,8 @@ export class MessageLock
     constructor(stuff: IMessageLock) {
         if (!(isIMessageLock(stuff))) throw new Error("invalid `MessageLock` data provided");
 
-        Object.defineProperties(
-            this, {
-                eventType: { value: 1, ...roDescr },
-                cborBytes: getCborBytesDescriptor(),
-                utxoRef: { value: new TxOutRef( stuff.utxoRef ), ...roDescr }, 
-                addr: { value: stuff.addr, ...roDescr }
-            }
-        );
+        this.utxoRef = new TxOutRef( stuff.utxoRef );
+        this.addr = stuff.addr;
     }
 
     toCbor(): CborString {
@@ -50,27 +41,22 @@ export class MessageLock
         if (!(isIMessageLock(this))) throw new Error("invalid `MessageLock` data provided");
 
         return new CborArray([
-            new CborUInt(this.eventType),
+            new CborUInt( MSG_LOCK_EVENT_TYPE),
             this.utxoRef.toCborObj(),
             this.addr.toCborObj()
         ]);
     }
 
     toCborBytes(): Uint8Array {
-        if (!(this.cborBytes instanceof Uint8Array)) {
-            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
-            this.cborBytes = Cbor.encode(this.toCborObj()).toBuffer();
-        }
-
-        return Uint8Array.prototype.slice.call(this.cborBytes);
+        return this.toCbor().toBuffer();
     }
 
     static fromCbor(cbor: CanBeCborString): MessageLock {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString(cbor).toBuffer();
-        return MessageLock.fromCborObj(Cbor.parse(bytes), bytes);
+        return MessageLock.fromCborObj(Cbor.parse(bytes));
     }
 
-    static fromCborObj(cbor: CborObj, _originalBytes?: Uint8Array | undefined): MessageLock {
+    static fromCborObj( cbor: CborObj ): MessageLock {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length === 3 &&
@@ -79,25 +65,14 @@ export class MessageLock
         )) throw new Error("invalid cbor for `MessageLock`");
 
         const [
-            cborEventType,
+            _,
             cborUTxORef,
             cborAddr
         ] = cbor.array;
 
-        const originalWerePresent = _originalBytes instanceof Uint8Array;
-        _originalBytes = _originalBytes instanceof Uint8Array ? _originalBytes : Cbor.encode(cbor).toBuffer();
-
-        const hdr = new MessageLock({
-            eventType: Number(cborEventType.num) as Code,
+        return new MessageLock({
             utxoRef: TxOutRef.fromCborObj(cborUTxORef),
             addr: Address.fromCborObj(cborAddr)
         });
-
-        if (originalWerePresent) {
-            // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.
-            hdr.cborBytes = _originalBytes;
-        }
-
-        return hdr;
     }
 }

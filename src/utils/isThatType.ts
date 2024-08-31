@@ -60,12 +60,3 @@ export function isWord64( stuff: any ): boolean
 {
     return isThatSize( stuff, 64 );
 }
-
-export function isUTxORef( stuff: any ): boolean 
-{
-    return(
-        isObject( stuff ) &&
-        isHash32( stuff.hash ) &&
-        isWord64( stuff.index )
-    );
-}
