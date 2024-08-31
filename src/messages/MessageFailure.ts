@@ -2,7 +2,6 @@ import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceC
 import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
 import { isByte, isUTxORef } from "../utils/isThatType";
 import { FailureTypeCodes } from "../utils/constants";
-import { UTxORefToCborObj } from "../utils/toCborObj";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { Code, UTxORef } from "../utils/types";
 import { roDescr } from "../utils/roDescr";
@@ -25,7 +24,7 @@ function failureDataToCborObj( stuff: FailureData ): CborArray
 {
     return new CborArray([
         new CborUInt( stuff.failureType ),
-        new CborArray( stuff.payload.map( ( utxo ) => ( UTxORefToCborObj( utxo ) )) )
+        new CborArray( stuff.payload.map( ref => ref.toCborObj() ) )
     ]);
 }
 

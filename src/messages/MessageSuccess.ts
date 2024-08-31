@@ -1,7 +1,6 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { getCborBytesDescriptor } from "../utils/getCborBytesDescriptor";
 import { isByte, isUTxORef } from "../utils/isThatType";
-import { UTxORefToCborObj } from "../utils/toCborObj";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { Code, UTxORef } from "../utils/types";
 import { roDescr } from "../utils/roDescr";
@@ -21,7 +20,7 @@ function isSuccessData(stuff: any): stuff is SuccessData {
 function successDataToCborObj(stuff: SuccessData): CborArray {
     return new CborArray([
         new CborUInt(stuff.successType),
-        new CborArray(stuff.utxoRefs.map((utxo) => (UTxORefToCborObj(utxo))))
+        new CborArray(stuff.utxoRefs.map( u => u.toCborObj() ))
     ]);
 }
 
