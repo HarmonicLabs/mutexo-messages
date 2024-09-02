@@ -59,7 +59,7 @@ export class MessageClose
             Number( cborEventType.num ) === MSG_LOCK_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageClose`" );
 
-        const hdr = new MessageClose({});
+        const hdr = new MessageClose();
 
         return hdr;
     }
