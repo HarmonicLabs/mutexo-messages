@@ -7,7 +7,7 @@ const MSG_FAILURE_EVENT_TYPE = 5;
 
 type FailureData = { 
     failureType: number, 
-    payload: TxOutRef[] 
+    utxoRefs: TxOutRef[] 
 };
 
 function isFailureData( stuff: any ): stuff is FailureData
@@ -15,8 +15,8 @@ function isFailureData( stuff: any ): stuff is FailureData
     return(
         isObject( stuff ) &&
         typeof FailureTypeCodes[ stuff.failureType ] === "string" &&
-        Array.isArray( stuff.payload ) &&
-        stuff.payload.every(( thing: any ) => ( thing instanceof TxOutRef ))
+        Array.isArray( stuff.utxoRefs ) &&
+        stuff.utxoRefs.every(( thing: any ) => ( thing instanceof TxOutRef ))
     );
 }
 
@@ -24,7 +24,7 @@ function failureDataToCborObj( stuff: FailureData ): CborArray
 {
     return new CborArray([
         new CborUInt( stuff.failureType ),
-        new CborArray( stuff.payload.map(( ref ) => ( ref.toCborObj() )) )
+        new CborArray( stuff.utxoRefs.map(( ref ) => ( ref.toCborObj() )) )
     ]);
 }
 
@@ -48,7 +48,7 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
 
     return {
         failureType: Number( cborFailureType.num ) as number,
-        payload: cborPayload.array.map( ( cborUtxo ) => TxOutRef.fromCborObj( cborUtxo ) )
+        utxoRefs: cborPayload.array.map( ( cborUtxo ) => TxOutRef.fromCborObj( cborUtxo ) )
     } as FailureData;
 }
 

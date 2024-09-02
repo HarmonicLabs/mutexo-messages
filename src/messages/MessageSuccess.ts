@@ -7,22 +7,22 @@ const MSG_SUCCESS_EVENT_TYPE = 4;
 
 type SuccessData = { 
     successType: number, 
-    payload: TxOutRef[] 
+    utxoRefs: TxOutRef[] 
 }
 
 function isSuccessData( stuff: any ): stuff is SuccessData {
     return (
         isObject(stuff) &&
         typeof SuccessTypeCodes[ stuff.successType ] === "string" &&
-        Array.isArray( stuff.payload ) &&
-        stuff.payload.every(( thing: any ) => ( thing instanceof TxOutRef ))
+        Array.isArray( stuff.utxoRefs ) &&
+        stuff.utxoRefs.every(( thing: any ) => ( thing instanceof TxOutRef ))
     );
 }
 
 function successDataToCborObj( stuff: SuccessData ): CborArray {
     return new CborArray([
         new CborUInt(stuff.successType),
-        new CborArray( stuff.payload.map(( ref ) => ( ref.toCborObj() )) )
+        new CborArray( stuff.utxoRefs.map(( ref ) => ( ref.toCborObj() )) )
     ]);
 }
 
@@ -45,7 +45,7 @@ function successDataFromCborObj( cbor: CborObj ): SuccessData {
 
     return {
         successType: Number(cborSuccessType.num) as number,
-        payload: cborPayload.array.map(( cborUtxo ) => ( TxOutRef.fromCborObj( cborUtxo ) ))
+        utxoRefs: cborPayload.array.map(( cborUtxo ) => ( TxOutRef.fromCborObj( cborUtxo ) ))
     } as SuccessData;
 }
 

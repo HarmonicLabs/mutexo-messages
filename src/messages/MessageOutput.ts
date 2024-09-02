@@ -23,7 +23,7 @@ export class MessageOutput
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
-    constructor(stuff: IMessageOutput) {
+    constructor( stuff: IMessageOutput ) {
         if (!( isIMessageOutput( stuff ) )) throw new Error( "invalid `MessageOutput` data provided" );
 
         this.utxoRef = stuff.utxoRef;

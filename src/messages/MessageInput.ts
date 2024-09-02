@@ -26,7 +26,7 @@ export class MessageInput
     readonly addr: Address;
     readonly txHash: Uint8Array;
 
-    constructor(stuff: IMessageInput) {
+    constructor( stuff: IMessageInput ) {
         if (!( isIMessageInput(stuff) )) throw new Error( "invalid `MessageInput` data provided" );
 
         this.utxoRef = stuff.utxoRef;
