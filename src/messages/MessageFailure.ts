@@ -1,11 +1,14 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
+import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { FailureTypeCodes } from "../utils/constants";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 
 const MSG_FAILURE_EVENT_TYPE = 5;
 
-type FailureData = { failureType: number, payload: TxOutRef[] }
+type FailureData = { 
+    failureType: number, 
+    payload: TxOutRef[] 
+};
 
 function isFailureData( stuff: any ): stuff is FailureData
 {
@@ -13,7 +16,7 @@ function isFailureData( stuff: any ): stuff is FailureData
         isObject( stuff ) &&
         typeof FailureTypeCodes[ stuff.failureType ] === "string" &&
         Array.isArray( stuff.payload ) &&
-        stuff.payload.every((thing: any) => thing instanceof TxOutRef )
+        stuff.payload.every(( thing: any ) => ( thing instanceof TxOutRef ))
     );
 }
 
@@ -21,7 +24,7 @@ function failureDataToCborObj( stuff: FailureData ): CborArray
 {
     return new CborArray([
         new CborUInt( stuff.failureType ),
-        new CborArray( stuff.payload.map( ref => ref.toCborObj() ) )
+        new CborArray( stuff.payload.map(( ref ) => ( ref.toCborObj() )) )
     ]);
 }
 
@@ -30,7 +33,7 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
     if(!(
         cbor instanceof CborArray &&
         Array.isArray( cbor.array ) &&
-        cbor.array.length === 2
+        cbor.array.length >= 2
     )) throw new Error( "invalid `FailureData` data provided" );
 
     const [
@@ -44,7 +47,7 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
     )) throw new Error( "invalid cbor for `FailureData`" );
 
     return {
-        failureType: Number( cborFailureType.num ),
+        failureType: Number( cborFailureType.num ) as number,
         payload: cborPayload.array.map( ( cborUtxo ) => TxOutRef.fromCborObj( cborUtxo ) )
     } as FailureData;
 }
@@ -76,7 +79,7 @@ export class MessageFailure
 
     toCbor(): CborString
     {
-        return new CborString( this.toCborBytes() );
+        return Cbor.encode( this.toCborObj() );
     }
 
     toCborObj(): CborArray
@@ -119,7 +122,8 @@ export class MessageFailure
         )) throw new Error( "invalid cbor for `MessageFailure`" );
 
         return new MessageFailure({ 
-            failureData: failureDataFromCborObj( cborFailureData )
+            failureData: failureDataFromCborObj( cborFailureData ) as FailureData
         });
     }
+
 }

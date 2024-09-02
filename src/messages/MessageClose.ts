@@ -1,6 +1,8 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
 
+const MSG_LOCK_EVENT_TYPE = 6;
+
 export interface IMessageClose {}
 
 function isIMessageClose( stuff: any ): stuff is IMessageClose
@@ -13,11 +15,12 @@ function isIMessageClose( stuff: any ): stuff is IMessageClose
 export class MessageClose
     implements ToCbor, ToCborObj, IMessageClose 
 {
+    
     constructor( stuff?: IMessageClose ) {}
 
     toCbor(): CborString
     {
-        return new CborString( this.toCborBytes() );
+        return Cbor.encode( this.toCborObj() );
     }
 
     toCborObj(): CborArray
@@ -25,7 +28,7 @@ export class MessageClose
         if(!( isIMessageClose( this ) )) throw new Error( "invalid `MessageClose` data provided" );
 
         return new CborArray([
-            new CborUInt( 6 ),
+            new CborUInt( MSG_LOCK_EVENT_TYPE ),
         ]);
     }
 
@@ -33,6 +36,7 @@ export class MessageClose
     {
         return this.toCbor().toBuffer();
     }
+    
     static fromCbor( cbor: CanBeCborString ): MessageClose
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
@@ -43,16 +47,19 @@ export class MessageClose
     {
         if(!(
             cbor instanceof CborArray &&
-            cbor.array.length === 1
+            cbor.array.length >= 1
         )) throw new Error( "invalid cbor for `MessageClose`" );
 
         const [
             cborEventType
         ] = cbor.array;
 
-        if(!( cborEventType instanceof CborUInt )) throw new Error( "invalid cbor for `MessageClose`" );
+        if(!( 
+            cborEventType instanceof CborUInt &&
+            Number( cborEventType.num ) === MSG_LOCK_EVENT_TYPE
+        )) throw new Error( "invalid cbor for `MessageClose`" );
 
-        const hdr = new MessageClose({ eventType: Number( cborEventType.num ) });
+        const hdr = new MessageClose({});
 
         return hdr;
     }

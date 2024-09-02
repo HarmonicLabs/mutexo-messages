@@ -1,6 +1,6 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
+import { Address, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { Address, isITxOutRef, TxOut, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 
 const MSG_FREE_EVENT_TYPE = 0;
 
@@ -9,9 +9,9 @@ export interface IMessageFree {
     addr: Address
 }
 
-function isIMessageFree(stuff: any): stuff is IMessageFree {
+function isIMessageFree( stuff: any ): stuff is IMessageFree {
     return (
-        isObject(stuff) &&
+        isObject( stuff ) &&
         stuff.utxoRef instanceof TxOutRef &&
         stuff.addr instanceof Address
     );
@@ -23,20 +23,22 @@ export class MessageFree
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
-    readonly cborBytes?: Uint8Array | undefined;
+    constructor( stuff: IMessageFree ) {
+        if(!( isIMessageFree( stuff ) )) throw new Error( "invalid `MessageFree` data provided" );
 
-    constructor(stuff: IMessageFree) {
-        if (!(isIMessageFree(stuff))) throw new Error("invalid `MessageFree` data provided");
-
+        this.utxoRef = stuff.utxoRef;
+        this.addr = stuff.addr;
     }
 
     toCbor(): CborString {
-        return new CborString(this.toCborBytes());
+        return Cbor.encode( this.toCborObj() );
     }
 
     toCborObj(): CborArray {
+        if(!( isIMessageFree( this ) )) throw new Error( "invalid `MessageFree` data provided" );
+
         return new CborArray([
-            new CborUInt( MSG_FREE_EVENT_TYPE),
+            new CborUInt( MSG_FREE_EVENT_TYPE ),
             this.utxoRef.toCborObj(),
             this.addr.toCborObj()
         ]);
@@ -46,27 +48,34 @@ export class MessageFree
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor(cbor: CanBeCborString): MessageFree {
-        const bytes = cbor instanceof Uint8Array ? cbor : forceCborString(cbor).toBuffer();
-        return MessageFree.fromCborObj(Cbor.parse(bytes));
+    static fromCbor( cbor: CanBeCborString ): MessageFree {
+        const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
+        return MessageFree.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj(cbor: CborObj): MessageFree {
+    static fromCborObj( cbor: CborObj ): MessageFree {
         if (!(
             cbor instanceof CborArray &&
-            cbor.array.length >= 3 &&
-            cbor.array[0] instanceof CborUInt &&
-            Number(cbor.array[0].num) === 0
+            cbor.array.length >= 3
         )) throw new Error("invalid cbor for `MessageFree`");
 
         const [
+            cborEventType,
             cborUTxORef,
             cborAddr
         ] = cbor.array;
 
+        if(!( 
+            cborEventType instanceof CborUInt &&
+            Number( cborEventType.num ) === MSG_FREE_EVENT_TYPE &&
+            cborUTxORef instanceof CborArray &&
+            cborAddr instanceof CborArray
+        )) throw new Error( "invalid cbor for `MessageFree`" );
+
         return new MessageFree({
-            utxoRef: TxOutRef.fromCborObj(cborUTxORef),
-            addr: Address.fromCborObj(cborAddr)
+            utxoRef: TxOutRef.fromCborObj( cborUTxORef ) as TxOutRef,
+            addr: Address.fromCborObj( cborAddr ) as Address
         });
     }
+
 }

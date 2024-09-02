@@ -32,8 +32,9 @@ export class MessageError
 
     toCbor(): CborString
     {
-        return new CborString( this.toCborBytes() );
+        return Cbor.encode( this.toCborObj() );
     }
+
     toCborObj(): CborArray
     {
         if(!( isIMessageError( this ) )) throw new Error( "invalid `MessageError` data provided" );
@@ -43,6 +44,7 @@ export class MessageError
             new CborUInt( this.errorType )
         ]);
     }
+    
     toCborBytes(): Uint8Array
     {
         return this.toCbor().toBuffer();
@@ -58,7 +60,7 @@ export class MessageError
     {
         if(!(
             cbor instanceof CborArray &&
-            cbor.array.length === 2
+            cbor.array.length >= 2
         )) throw new Error( "invalid cbor for `MessageError`" );
 
         const [
@@ -68,8 +70,8 @@ export class MessageError
 
         if(!( 
             cborEventType instanceof CborUInt &&
-            cborErrorType instanceof CborUInt &&
-            Number(cborEventType.num) === MSG_ERROR_EVENT_TYPE
+            Number( cborEventType.num ) === MSG_ERROR_EVENT_TYPE &&
+            cborErrorType instanceof CborUInt
         )) throw new Error( "invalid cbor for `MessageError`" );
 
         const hdr = new MessageError({ 

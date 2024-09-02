@@ -35,3 +35,10 @@ export enum FailureTypeCodes {
 }
 
 Object.freeze( FailureTypeCodes );
+
+export enum SuccessTypeCodes {
+    UTxOFreed             = 0, 
+    UTxOLocked            = 1, 
+}
+
+Object.freeze( SuccessTypeCodes );
