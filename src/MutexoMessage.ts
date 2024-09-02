@@ -52,8 +52,7 @@ export function isIMutexoMessage( stuff: any ): stuff is IMutexoMessage
 {
     return(
         isObject( stuff ) &&
-        isByte( stuff.eventType ) &&
-        Object.values( MessageTypeCodes ).includes( stuff.eventType )
+        typeof MessageTypeCodes[ stuff.eventType ] === "string"
     );
 }
 
@@ -64,9 +63,6 @@ export function mutexoMessageFromCbor( cbor: CanBeCborString ): MutexoMessage
         forceCborString( cbor ).toBuffer();
     
     const msg = mutexoMessageFromCborObj( Cbor.parse( buff ) );
-
-    // @ts-ignore Cannot assign to 'cborBytes' because it is a read-only property.ts(2540)
-    msg.cborBytes = buff;
 
     return msg;
 }

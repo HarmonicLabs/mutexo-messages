@@ -43,16 +43,19 @@ export class MessageClose
     {
         if(!(
             cbor instanceof CborArray &&
-            cbor.array.length === 1
+            cbor.array.length >= 1
         )) throw new Error( "invalid cbor for `MessageClose`" );
 
         const [
             cborEventType
         ] = cbor.array;
 
-        if(!( cborEventType instanceof CborUInt )) throw new Error( "invalid cbor for `MessageClose`" );
+        if(!(
+            cborEventType instanceof CborUInt &&
+            cborEventType.num === BigInt( 6 )
+        )) throw new Error( "invalid cbor for `MessageClose`" );
 
-        const hdr = new MessageClose({ eventType: Number( cborEventType.num ) });
+        const hdr = new MessageClose();
 
         return hdr;
     }

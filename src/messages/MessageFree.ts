@@ -27,7 +27,6 @@ export class MessageFree
 
     constructor(stuff: IMessageFree) {
         if (!(isIMessageFree(stuff))) throw new Error("invalid `MessageFree` data provided");
-
     }
 
     toCbor(): CborString {
@@ -36,7 +35,7 @@ export class MessageFree
 
     toCborObj(): CborArray {
         return new CborArray([
-            new CborUInt( MSG_FREE_EVENT_TYPE),
+            new CborUInt( MSG_FREE_EVENT_TYPE ),
             this.utxoRef.toCborObj(),
             this.addr.toCborObj()
         ]);
