@@ -1,15 +1,15 @@
 import { CanBeTxOutRef, forceTxOutRef, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 
-export interface IAddrFilter {
+export interface IUtxoFilter {
     utxoRef: CanBeTxOutRef;
 }
 
-export class UtxoFilter implements ToCbor, ToCborObj, IAddrFilter
+export class UtxoFilter implements ToCbor, ToCborObj, IUtxoFilter
 {
     readonly utxoRef: TxOutRef;
 
-    constructor({ utxoRef }: IAddrFilter)
+    constructor({ utxoRef }: IUtxoFilter)
     {
         this.utxoRef = forceTxOutRef( utxoRef );
     }
