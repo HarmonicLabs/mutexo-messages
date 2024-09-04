@@ -7,7 +7,7 @@ import { MessageClose, IMessageClose } from "./messages/MessageClose";
 import { MessageError, IMessageError } from "./messages/MessageError";
 import { MessageFree, IMessageFree } from "./messages/MessageFree";
 import { MessageLock, IMessageLock } from "./messages/MessageLock";
-import { MessageTypeCodes } from "./utils/constants";
+import { MutexoEventIndex } from "./utils/constants";
 import { isObject } from "@harmoniclabs/obj-utils";
 
 export type MutexoMessage
@@ -51,7 +51,7 @@ export function isIMutexoMessage( stuff: any ): stuff is IMutexoMessage
 {
     return(
         isObject( stuff ) &&
-        typeof MessageTypeCodes[ stuff.eventType ] === "string"
+        typeof MutexoEventIndex[ stuff.eventType ] === "string"
     );
 }
 

@@ -1,6 +1,6 @@
 export const hexChars = Object.freeze( Array.from( "0123456789abcdef" ) );
 
-export enum MessageTypeCodes {
+export enum MutexoEventIndex {
     Free                    = 0, 
     Lock                    = 1, 
     Input                   = 2, 
@@ -11,7 +11,7 @@ export enum MessageTypeCodes {
     Error                   = 7
 }
 
-Object.freeze( MessageTypeCodes );
+Object.freeze( MutexoEventIndex );
 
 export enum ErrorCode {
     NotAuth                 = 0, 
