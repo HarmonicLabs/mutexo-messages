@@ -1,12 +1,12 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { ErrorCode } from "../utils/constants";
+import { ErrorCodes } from "../utils/constants";
 
 const MSG_ERROR_EVENT_TYPE = 7; 
 
 export interface IMessageError
 {
-    errorType: ErrorCode
+    errorType: ErrorCodes
 }
 
 function isIMessageError( stuff: any ): stuff is IMessageError
@@ -14,14 +14,14 @@ function isIMessageError( stuff: any ): stuff is IMessageError
     return(
         isObject( stuff ) &&
         Number.isSafeInteger( stuff.errorType ) &&
-        typeof ErrorCode[ stuff.errorType ] === "string"
+        typeof ErrorCodes[ stuff.errorType ] === "string"
     );
 }
 
 export class MessageError
     implements ToCbor, ToCborObj, IMessageError 
 {
-    readonly errorType: ErrorCode;
+    readonly errorType: ErrorCodes;
 
     constructor( stuff : IMessageError )
     {
@@ -75,7 +75,7 @@ export class MessageError
         )) throw new Error( "invalid cbor for `MessageError`" );
 
         const hdr = new MessageError({ 
-            errorType: Number( cborErrorType.num ) as ErrorCode
+            errorType: Number( cborErrorType.num ) as ErrorCodes
         });
 
         return hdr;

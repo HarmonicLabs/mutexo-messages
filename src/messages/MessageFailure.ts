@@ -1,7 +1,7 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
-import { FailureCodes } from "../utils/constants";
 import { isObject } from "@harmoniclabs/obj-utils";
+import { FailureCodes } from "../utils/constants";
 
 const MSG_FAILURE_EVENT_TYPE = 5;
 

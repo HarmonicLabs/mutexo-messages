@@ -13,7 +13,7 @@ export enum MutexoEventIndex {
 
 Object.freeze( MutexoEventIndex );
 
-export enum ErrorCode {
+export enum ErrorCodes {
     NotAuth                 = 0, 
     MissingIP               = 1, 
     InvalidAuthToken        = 2, 
@@ -27,7 +27,7 @@ export enum ErrorCode {
     UnsubMessage            = 10
 }
 
-Object.freeze( ErrorCode );
+Object.freeze( ErrorCodes );
 
 export enum FailureCodes {
     NoUTxOFreed             = 0, 

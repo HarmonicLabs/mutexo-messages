@@ -1,5 +1,5 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
-import { Address, isITxOutRef, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
+import { Address, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
 
 const MSG_LOCK_EVENT_TYPE = 1;
