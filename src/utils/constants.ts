@@ -29,16 +29,16 @@ export enum ErrorCode {
 
 Object.freeze( ErrorCode );
 
-export enum FailureTypeCodes {
+export enum FailureCodes {
     NoUTxOFreed             = 0, 
     NoUTxOLocked            = 1, 
 }
 
-Object.freeze( FailureTypeCodes );
+Object.freeze( FailureCodes );
 
-export enum SuccessTypeCodes {
+export enum SuccessCodes {
     UTxOFreed             = 0, 
     UTxOLocked            = 1, 
 }
 
-Object.freeze( SuccessTypeCodes );
+Object.freeze( SuccessCodes );

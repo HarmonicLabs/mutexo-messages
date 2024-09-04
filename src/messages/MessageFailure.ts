@@ -1,6 +1,6 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
-import { FailureTypeCodes } from "../utils/constants";
+import { FailureCodes } from "../utils/constants";
 import { isObject } from "@harmoniclabs/obj-utils";
 
 const MSG_FAILURE_EVENT_TYPE = 5;
@@ -14,7 +14,7 @@ function isFailureData( stuff: any ): stuff is FailureData
 {
     return(
         isObject( stuff ) &&
-        typeof FailureTypeCodes[ stuff.failureType ] === "string" &&
+        typeof FailureCodes[ stuff.failureType ] === "string" &&
         Array.isArray( stuff.utxoRefs ) &&
         stuff.utxoRefs.every(( thing: any ) => ( thing instanceof TxOutRef ))
     );

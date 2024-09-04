@@ -39,7 +39,7 @@ export class ClientSub implements ToCbor, ToCborObj, IClientSub {
     static fromCborObj(cbor: CborObj): ClientSub {
         if (!(
             cbor instanceof CborArray &&
-            cbor.array.length >= 2 &&
+            cbor.array.length >= 3 &&
             cbor.array[0] instanceof CborUInt &&
             cbor.array[0].num === BigInt(2) &&
             cbor.array[1] instanceof CborUInt &&

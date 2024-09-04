@@ -1,6 +1,6 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
-import { SuccessTypeCodes } from "../utils/constants";
+import { SuccessCodes } from "../utils/constants";
 import { isObject } from "@harmoniclabs/obj-utils";
 
 const MSG_SUCCESS_EVENT_TYPE = 4;
@@ -13,7 +13,7 @@ type SuccessData = {
 function isSuccessData( stuff: any ): stuff is SuccessData {
     return (
         isObject(stuff) &&
-        typeof SuccessTypeCodes[ stuff.successType ] === "string" &&
+        typeof SuccessCodes[ stuff.successType ] === "string" &&
         Array.isArray( stuff.utxoRefs ) &&
         stuff.utxoRefs.every(( thing: any ) => ( thing instanceof TxOutRef ))
     );
