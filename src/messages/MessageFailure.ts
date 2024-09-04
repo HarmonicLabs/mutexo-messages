@@ -54,6 +54,7 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
 
 export interface IMessageFailure
 {
+    id: number,
     failureData: FailureData
 }
 
@@ -61,6 +62,7 @@ function isIMessageFailure( stuff: any ): stuff is IMessageFailure
 {
     return(
         isObject( stuff ) &&
+        typeof stuff.id === "number" &&
         isFailureData( stuff.failureData )
     );
 }
@@ -68,12 +70,14 @@ function isIMessageFailure( stuff: any ): stuff is IMessageFailure
 export class MessageFailure
     implements ToCbor, ToCborObj, IMessageFailure 
 {
+    readonly id: number;
     readonly failureData: FailureData;
 
     constructor( stuff : IMessageFailure )
     {
         if(!( isIMessageFailure( stuff ) )) throw new Error( "invalid `MessageFailure` data provided" );
 
+        this.id = stuff.id;
         this.failureData = stuff.failureData;
     }
 
@@ -88,6 +92,7 @@ export class MessageFailure
 
         return new CborArray([
             new CborUInt( MSG_FAILURE_EVENT_TYPE ),
+            new CborUInt( this.id ),
             failureDataToCborObj( this.failureData )
         ]);
     }
@@ -107,21 +112,24 @@ export class MessageFailure
     {
         if(!(
             cbor instanceof CborArray &&
-            cbor.array.length >= 2
+            cbor.array.length >= 3
         )) throw new Error( "invalid cbor for `MessageFailure`" );
 
         const [
             cborEventType,
+            cborId,
             cborFailureData
         ] = cbor.array;
 
         if(!( 
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_FAILURE_EVENT_TYPE &&
+            cborId instanceof CborUInt &&
             cborFailureData instanceof CborArray
         )) throw new Error( "invalid cbor for `MessageFailure`" );
 
         return new MessageFailure({ 
+            id: Number( cborId.num ) as number,
             failureData: failureDataFromCborObj( cborFailureData ) as FailureData
         });
     }

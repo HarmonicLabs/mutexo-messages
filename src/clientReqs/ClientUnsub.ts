@@ -1,49 +1,85 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { Filter, filterFromCborObj } from "./filters/Filter";
+import { isObject } from "@harmoniclabs/obj-utils";
 
+const CLIENT_UNSUB_TYPE = 3;
 export interface IClientUnsub {
+    id: number;
     eventType: number;
     filters: Filter[];
 }
 
-export class ClientUnsub implements ToCbor, ToCborObj, IClientUnsub {
+function isIClientUnsub( stuff: any ): stuff is IClientUnsub
+{
+    return(
+        isObject( stuff ) &&
+        typeof stuff.id === "number" &&
+        typeof stuff.eventType === "number" &&
+        Array.isArray( stuff.filters )
+    );
+}
+
+export class ClientUnsub implements ToCbor, ToCborObj, IClientUnsub 
+{
+    readonly id: number;
     readonly eventType: number;
     readonly filters: Filter[];
 
-    constructor({ eventType, filters }: IClientUnsub) {
-        this.eventType = eventType;
-        this.filters = filters;
+    constructor( stuff: IClientUnsub ) {
+        if(!( isIClientUnsub( stuff ) )) throw new Error( "invalid `ClientUnsub` data provided" );
+
+        this.id = stuff.id;
+        this.eventType = stuff.eventType;
+        this.filters = stuff.filters;
     }
 
-    toCbor(): CborString {
-        return Cbor.encode(this.toCborObj());
-    }
-    toCborObj(): CborObj {
-        return new CborArray([
-            new CborUInt( 3 ),
-            new CborUInt(this.eventType),
-            new CborArray(this.filters.map(filter => filter.toCborObj()))
-        ]);
-    }
     toCborBytes(): Uint8Array {
         return this.toCbor().toBuffer();
     }
-
-    static fromCbor(cbor: CanBeCborString): ClientUnsub {
-        const bytes = cbor instanceof Uint8Array ? cbor : forceCborString(cbor).toBuffer();
-        return ClientUnsub.fromCborObj(Cbor.parse(bytes));
+    toCbor(): CborString {
+        return Cbor.encode( this.toCborObj() );
     }
-    static fromCborObj(cbor: CborObj): ClientUnsub {
+    toCborObj(): CborObj {
+        if(!( isIClientUnsub( this ) )) throw new Error( "invalid `ClientUnsub` data provided" );
+
+        return new CborArray([
+            new CborUInt( CLIENT_UNSUB_TYPE ),
+            new CborUInt( this.id ),
+            new CborUInt( this.eventType ),
+            new CborArray( this.filters.map(( filter ) => ( filter.toCborObj() )) )
+        ]);
+    }
+
+    static fromCbor( cbor: CanBeCborString ): ClientUnsub {
+        const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
+        return ClientUnsub.fromCborObj( Cbor.parse( bytes ) );
+    }
+    static fromCborObj( cbor: CborObj ): ClientUnsub {
         if (!(
             cbor instanceof CborArray &&
-            cbor.array.length >= 3 &&
-            cbor.array[0] instanceof CborUInt &&
-            cbor.array[0].num === BigInt(3) &&
-            cbor.array[1] instanceof CborUInt &&
-            cbor.array[2] instanceof CborArray
-        )) throw new Error("Invalid CBOR for ClientUnsub");
+            cbor.array.length >= 4
+        )) throw new Error( "invalid cbor for `ClientUnsub`" );
         
-        const [ _, eventType, filters] = cbor.array;
-        return new ClientUnsub({ eventType: Number(eventType.num), filters: filters.array.map( filterFromCborObj ) });
+        const [ 
+            _, 
+            cborId, 
+            cborEventType, 
+            cborFilters 
+        ] = cbor.array;
+
+        if (!(
+            _ instanceof CborUInt &&
+            Number( _.num ) === CLIENT_UNSUB_TYPE &&
+            cborId instanceof CborUInt &&
+            cborEventType instanceof CborUInt &&
+            cborFilters instanceof CborArray
+        )) throw new Error( "invalid cbor for `ClientUnsub`" );
+
+        return new ClientUnsub({ 
+            id: Number( cborId.num ) as number,
+            eventType: Number( cborEventType.num ) as number, 
+            filters: cborFilters.array.map( filterFromCborObj ) as Filter[]
+        });
     }
+
 }

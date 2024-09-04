@@ -50,12 +50,14 @@ function successDataFromCborObj( cbor: CborObj ): SuccessData {
 }
 
 export interface IMessageSuccess {
+    id: number,
     successData: SuccessData
 }
 
 function isIMessageSuccess( stuff: any ): stuff is IMessageSuccess {
     return (
         isObject( stuff ) &&
+        typeof stuff.id === "number" &&
         isSuccessData( stuff.successData )
     );
 }
@@ -63,12 +65,13 @@ function isIMessageSuccess( stuff: any ): stuff is IMessageSuccess {
 export class MessageSuccess
     implements ToCbor, ToCborObj, IMessageSuccess
 {
-    readonly eventType: number;
+    readonly id: number;
     readonly successData: SuccessData;
 
     constructor(stuff: IMessageSuccess) {
         if (!( isIMessageSuccess( stuff ) )) throw new Error( "invalid `MessageSuccess` data provided" );
 
+        this.id = stuff.id;
         this.successData = stuff.successData;
     }
 
@@ -81,6 +84,7 @@ export class MessageSuccess
 
         return new CborArray([
             new CborUInt( MSG_SUCCESS_EVENT_TYPE ),
+            new CborUInt( this.id ),
             successDataToCborObj( this.successData )
         ]);
     }
@@ -97,21 +101,24 @@ export class MessageSuccess
     static fromCborObj( cbor: CborObj ): MessageSuccess {
         if (!(
             cbor instanceof CborArray &&
-            cbor.array.length >= 2
+            cbor.array.length >= 3
         )) throw new Error( "invalid cbor for `MessageSuccess`" );
 
         const [
             cborEventType,
+            cborId,
             cborSuccessData
         ] = cbor.array;
 
         if (!(
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_SUCCESS_EVENT_TYPE &&
+            cborId instanceof CborUInt &&
             cborSuccessData instanceof CborArray
         )) throw new Error("invalid cbor for `MessageSuccess`");
 
         return new MessageSuccess({
+            id: Number( cborId.num ) as number,
             successData: successDataFromCborObj(cborSuccessData) as SuccessData
         });
     }

@@ -1,52 +1,85 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { Filter, filterFromCborObj } from "./filters/Filter";
+import { isObject } from "@harmoniclabs/obj-utils";
+
+const CLIENT_SUB_TYPE = 2;
 
 export interface IClientSub {
+    id: number;
     eventType: number;
     filters: Filter[];
 }
 
-export class ClientSub implements ToCbor, ToCborObj, IClientSub {
+function isIClientSub( stuff: any ): stuff is IClientSub
+{
+    return(
+        isObject( stuff ) &&
+        typeof stuff.id === "number" &&
+        typeof stuff.eventType === "number" &&
+        Array.isArray( stuff.filters )
+    );
+}
+
+export class ClientSub implements ToCbor, ToCborObj, IClientSub 
+{
+    readonly id: number;
     readonly eventType: number;
     readonly filters: Filter[];
 
-    constructor({ eventType, filters }: IClientSub) {
-        this.eventType = eventType;
-        this.filters = filters;
-    }
+    constructor( stuff: IClientSub ) {
+        if(!( isIClientSub( stuff ) )) throw new Error( "invalid `ClientSub` data provided" );
 
-    toCborObj(): CborObj {
-        return new CborArray([
-            new CborUInt( 2 ),
-            new CborUInt(this.eventType),
-            new CborArray(this.filters.map(filter => filter.toCborObj()))
-        ]);
-    }
-
-    toCbor(): CborString {
-        return Cbor.encode(this.toCborObj());
+        this.id = stuff.id;
+        this.eventType = stuff.eventType;
+        this.filters = stuff.filters;
     }
 
     toCborBytes(): Uint8Array {
         return this.toCbor().toBuffer();
     }
+    toCbor(): CborString {
+        return Cbor.encode( this.toCborObj() );
+    }
+    toCborObj(): CborObj {
+        if(!( isIClientSub( this ) )) throw new Error( "invalid `ClientSub` data provided" );
 
-    static fromCbor(cbor: CanBeCborString): ClientSub {
-        const bytes = cbor instanceof Uint8Array ? cbor : forceCborString(cbor).toBuffer();
-        return ClientSub.fromCborObj(Cbor.parse(bytes));
+        return new CborArray([
+            new CborUInt( CLIENT_SUB_TYPE ),
+            new CborUInt( this.id ),
+            new CborUInt( this.eventType ),
+            new CborArray( this.filters.map(( filter ) => ( filter.toCborObj() )) )
+        ]);
     }
 
-    static fromCborObj(cbor: CborObj): ClientSub {
+    static fromCbor( cbor: CanBeCborString ): ClientSub {
+        const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
+        return ClientSub.fromCborObj( Cbor.parse( bytes ) );
+    }
+    static fromCborObj( cbor: CborObj ): ClientSub {
         if (!(
             cbor instanceof CborArray &&
-            cbor.array.length >= 3 &&
-            cbor.array[0] instanceof CborUInt &&
-            cbor.array[0].num === BigInt(2) &&
-            cbor.array[1] instanceof CborUInt &&
-            cbor.array[2] instanceof CborArray
-        )) throw new Error("Invalid CBOR for ClientSub");
+            cbor.array.length >= 4 
+        )) throw new Error( "invalid cbor for `ClientSub`" );
+
+        const [ 
+            _,
+            cborId,
+            cborEventType, 
+            cborFilters
+        ] = cbor.array;
+
+        if (!(
+            _ instanceof CborUInt &&
+            Number( _.num ) === CLIENT_SUB_TYPE &&
+            cborId instanceof CborUInt &&
+            cborEventType instanceof CborUInt &&
+            cborFilters instanceof CborArray
+        )) throw new Error( "invalid cbor for `ClientSub`" );
         
-        const [ _, eventType, filters] = cbor.array;
-        return new ClientSub({ eventType: Number(eventType.num), filters: filters.array.map( filterFromCborObj ) });
+        return new ClientSub({ 
+            id: Number( cborId.num ) as number,
+            eventType: Number( cborEventType.num ) as number, 
+            filters: cborFilters.array.map( filterFromCborObj ) as Filter[]
+        });
     }
 }
