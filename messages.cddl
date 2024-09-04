@@ -16,8 +16,8 @@ msgFree    = [ 0, utxoRef, addr ]
 msgLock    = [ 1, utxoRef, addr ]
 msgInput   = [ 2, utxoRef, addr, txHash ]; txHash of the tx that spent the utxo
 msgOutput  = [ 3, utxoRef, addr ];
-msgSuccess = [ 4, successData ];
-msgFailure = [ 5, failureData ];
+msgSuccess = [ 4, id, successData ];
+msgFailure = [ 5, id, failureData ];
 msgClose   = [ 6 ];
 msgError   = [ 7, errorType ];
 
@@ -28,14 +28,15 @@ clientReq
     \ clientUnsub
 
 ; messages sent from the client to the server
-clientReqFree = [ 0, [ + utxoRef ] ];
+clientReqFree = [ 0, id, [ + utxoRef ] ];
 clientReqLock = [
     1,
+    id,
     [ + utxoRef ], ; utxos to lock
     ? uint; (optional) number of required utxos to lock in order to succeed, defaults to `1`
 ];
-clientSub = [ 2, eventType, [ * filter ] ];
-clientUnsub = [ 3, eventType, [ * filter ] ];
+clientSub = [ 2, id, eventType, [ * filter ] ];
+clientUnsub = [ 3, id, eventType, [ * filter ] ];
 
 eventType = uint .size 1 ; unsigned integer 1 byte
 ; 0: Free
@@ -77,6 +78,8 @@ errorType = (
 utxoRef = [ hash32, uint ]
 
 txHash = hash32;
+
+id = uint .size 8;
 
 hash32 = bytes .size 32;
 addr = bytes; according to the cardano-ledger cddl (babbage)
