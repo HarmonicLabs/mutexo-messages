@@ -65,7 +65,6 @@ export function mutexoMessageFromCbor( cbor: CanBeCborString ): MutexoMessage
 
     return msg;
 }
-
 export function mutexoMessageFromCborObj( cbor: CborObj ): MutexoMessage
 {
     if(!(
