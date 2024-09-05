@@ -34,7 +34,6 @@ export function clientReqFromCbor( cbor: CanBeCborString ): ClientReq
 
     return msg;
 }
-
 export function clientReqFromCborObj( cbor: CborObj ): ClientReq
 {
     if(!(
