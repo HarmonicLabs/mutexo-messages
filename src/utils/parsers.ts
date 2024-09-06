@@ -8,7 +8,7 @@ export function parseMutexoMessage( stuff: any ): MutexoMessage
     if(!( 
         isObject( stuff ) &&
         stuff instanceof CborArray 
-    )) throw new Error( "Invalid message" );
+    )) throw new Error( "invalid cbor mutexo message" );
 
     return mutexoMessageFromCborObj( stuff );
 }
@@ -18,7 +18,7 @@ export function parseClientReq( stuff: any ): ClientReq
     if(!( 
         isObject( stuff ) &&
         stuff instanceof CborArray 
-    )) throw new Error( "Invalid message" );
+    )) throw new Error( "invalid cbor client request message" );
 
     return clientReqFromCborObj( stuff );
 }

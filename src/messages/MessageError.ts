@@ -6,7 +6,7 @@ const MSG_ERROR_EVENT_TYPE = 7;
 
 export interface IMessageError
 {
-    errorType: ErrorCodes
+    errorType: number;
 }
 
 function isIMessageError( stuff: any ): stuff is IMessageError
@@ -21,7 +21,7 @@ function isIMessageError( stuff: any ): stuff is IMessageError
 export class MessageError
     implements ToCbor, ToCborObj, IMessageError 
 {
-    readonly errorType: ErrorCodes;
+    readonly errorType: number;
 
     constructor( stuff : IMessageError )
     {
@@ -30,11 +30,14 @@ export class MessageError
         this.errorType = stuff.errorType;
     }
 
+    toCborBytes(): Uint8Array
+    {
+        return this.toCbor().toBuffer();
+    }
     toCbor(): CborString
     {
         return Cbor.encode( this.toCborObj() );
     }
-
     toCborObj(): CborArray
     {
         if(!( isIMessageError( this ) )) throw new Error( "invalid `MessageError` data provided" );
@@ -45,17 +48,11 @@ export class MessageError
         ]);
     }
     
-    toCborBytes(): Uint8Array
-    {
-        return this.toCbor().toBuffer();
-    }
-
     static fromCbor( cbor: CanBeCborString ): MessageError
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
         return MessageError.fromCborObj( Cbor.parse( bytes ) );
     }
-
     static fromCborObj( cbor: CborObj ): MessageError
     {
         if(!(
@@ -71,7 +68,8 @@ export class MessageError
         if(!( 
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_ERROR_EVENT_TYPE &&
-            cborErrorType instanceof CborUInt
+            cborErrorType instanceof CborUInt &&
+            Number( cborErrorType.num ) in ErrorCodes 
         )) throw new Error( "invalid cbor for `MessageError`" );
 
         const hdr = new MessageError({ 

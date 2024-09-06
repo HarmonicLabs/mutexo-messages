@@ -1,9 +1,9 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborUInt, forceCborString } from "@harmoniclabs/cbor";
+import { ClientReqFree, IClientReqFree } from "./clientReqs/ClientReqFree";
+import { ClientReqLock, IClientReqLock } from "./clientReqs/ClientReqLock";
+import { ClientUnsub, IClientUnsub } from "./clientReqs/ClientUnsub";
+import { ClientSub, IClientSub } from "./clientReqs/ClientSub";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { ClientReqFree } from "./clientReqs/ClientReqFree";
-import { ClientReqLock } from "./clientReqs/ClientReqLock";
-import { ClientSub } from "./clientReqs/ClientSub";
-import { ClientUnsub } from "./clientReqs/ClientUnsub";
 
 export type ClientReq
     = ClientReqFree
@@ -16,13 +16,19 @@ export function isClientReq( stuff: any ): stuff is ClientReq
     return(
         isObject( stuff ) && 
         (
-            stuff instanceof ClientReqFree    ||
-            stuff instanceof ClientReqLock    ||
-            stuff instanceof ClientSub   ||
+            stuff instanceof ClientReqFree  ||
+            stuff instanceof ClientReqLock  ||
+            stuff instanceof ClientSub      ||
             stuff instanceof ClientUnsub
         )
     );
 }
+
+export type IClientReq
+    = IClientReqFree
+    | IClientReqLock
+    | IClientSub
+    | IClientUnsub;
 
 export function clientReqFromCbor( cbor: CanBeCborString ): ClientReq
 {
@@ -40,7 +46,7 @@ export function clientReqFromCborObj( cbor: CborObj ): ClientReq
         cbor instanceof CborArray &&
         cbor.array.length >= 1 &&
         cbor.array[0] instanceof CborUInt
-    )) throw new Error("invalid cbor for `MutexoMessage`");
+    )) throw new Error( "invalid cbor for `ClientReq`" );
 
     const index = Number( cbor.array[0].num );
 
@@ -49,5 +55,5 @@ export function clientReqFromCborObj( cbor: CborObj ): ClientReq
     if( index === 2 ) return ClientSub.fromCborObj( cbor );
     if( index === 3 ) return ClientUnsub.fromCborObj( cbor );
 
-    throw new Error( "invalid cbor for `MutexoMessage`; unknown index: " + index );
+    throw new Error( "invalid cbor for `ClientReq`; unknown index: " + index );
 }

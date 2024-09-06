@@ -5,13 +5,24 @@ export enum MutexoEventIndex {
     Lock                    = 1, 
     Input                   = 2, 
     Output                  = 3, 
-    Success                 = 4, 
-    Failure                 = 5, 
+    MtxSuccess              = 4, 
+    MtxFailure              = 5, 
     Close                   = 6,     
-    Error                   = 7
+    Error                   = 7,
+    SubSuccess              = 8,
+    SubFailure              = 9
 }
 
 Object.freeze( MutexoEventIndex );
+
+export enum ClientReqEventIndex {
+    Free                    = 0, 
+    Lock                    = 1, 
+    Input                   = 2, 
+    Output                  = 3
+}
+
+Object.freeze( ClientReqEventIndex );
 
 export enum ErrorCodes {
     NotAuth                 = 0, 
