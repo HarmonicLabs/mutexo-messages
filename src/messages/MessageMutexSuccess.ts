@@ -49,12 +49,12 @@ function successDataFromCborObj( cbor: CborObj ): SuccessData {
     } as SuccessData;
 }
 
-export interface IMessageSuccess {
+export interface IMessageMutexSuccess {
     id: number,
     successData: SuccessData
 }
 
-function isIMessageSuccess( stuff: any ): stuff is IMessageSuccess {
+function isIMessageMutexSuccess( stuff: any ): stuff is IMessageMutexSuccess {
     return (
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
@@ -62,14 +62,14 @@ function isIMessageSuccess( stuff: any ): stuff is IMessageSuccess {
     );
 }
 
-export class MessageSuccess
-    implements ToCbor, ToCborObj, IMessageSuccess
+export class MessageMutexSuccess
+    implements ToCbor, ToCborObj, IMessageMutexSuccess
 {
     readonly id: number;
     readonly successData: SuccessData;
 
-    constructor(stuff: IMessageSuccess) {
-        if (!( isIMessageSuccess( stuff ) )) throw new Error( "invalid `MessageSuccess` data provided" );
+    constructor(stuff: IMessageMutexSuccess) {
+        if (!( isIMessageMutexSuccess( stuff ) )) throw new Error( "invalid `MessageMutexSuccess` data provided" );
 
         this.id = stuff.id;
         this.successData = stuff.successData;
@@ -80,7 +80,7 @@ export class MessageSuccess
     }
 
     toCborObj(): CborArray {
-        if (!(isIMessageSuccess(this))) throw new Error( "invalid `MessageSuccess` data provided" );
+        if (!(isIMessageMutexSuccess(this))) throw new Error( "invalid `MessageMutexSuccess` data provided" );
 
         return new CborArray([
             new CborUInt( MSG_SUCCESS_EVENT_TYPE ),
@@ -93,16 +93,16 @@ export class MessageSuccess
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor( cbor: CanBeCborString ): MessageSuccess {
+    static fromCbor( cbor: CanBeCborString ): MessageMutexSuccess {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageSuccess.fromCborObj( Cbor.parse( bytes ) );
+        return MessageMutexSuccess.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj( cbor: CborObj ): MessageSuccess {
+    static fromCborObj( cbor: CborObj ): MessageMutexSuccess {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length >= 3
-        )) throw new Error( "invalid cbor for `MessageSuccess`" );
+        )) throw new Error( "invalid cbor for `MessageMutexSuccess`" );
 
         const [
             cborEventType,
@@ -115,9 +115,9 @@ export class MessageSuccess
             Number( cborEventType.num ) === MSG_SUCCESS_EVENT_TYPE &&
             cborId instanceof CborUInt &&
             cborSuccessData instanceof CborArray
-        )) throw new Error("invalid cbor for `MessageSuccess`");
+        )) throw new Error("invalid cbor for `MessageMutexSuccess`");
 
-        return new MessageSuccess({
+        return new MessageMutexSuccess({
             id: Number( cborId.num ) as number,
             successData: successDataFromCborObj(cborSuccessData) as SuccessData
         });

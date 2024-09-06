@@ -16,10 +16,12 @@ msgFree    = [ 0, utxoRef, addr ]
 msgLock    = [ 1, utxoRef, addr ]
 msgInput   = [ 2, utxoRef, addr, txHash ]; txHash of the tx that spent the utxo
 msgOutput  = [ 3, utxoRef, addr ];
-msgSuccess = [ 4, id, successData ];
-msgFailure = [ 5, id, failureData ];
+msgMutexSuccess = [ 4, id, successData ];
+msgMutexFailure = [ 5, id, failureData ];
 msgClose   = [ 6 ];
 msgError   = [ 7, errorType ];
+msgSubSuccess = [ 8, id ];
+msgSubFailure = [ 9, id, errorType ];
 
 clientReq
     = clientReqFree

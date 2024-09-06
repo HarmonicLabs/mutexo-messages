@@ -1,6 +1,6 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborUInt, forceCborString } from "@harmoniclabs/cbor";
-import { MessageFailure, IMessageFailure } from "./messages/MessageFailure";
-import { MessageSuccess, IMessageSuccess } from "./messages/MessageSuccess";
+import { MessageMutexFailure, IMessageMutexFailure } from "./messages/MessageMutexFailure";
+import { MessageMutexSuccess, IMessageMutexSuccess } from "./messages/MessageMutexSuccess";
 import { MessageOutput, IMessageOutput } from "./messages/MessageOutput";
 import { MessageInput, IMessageInput } from "./messages/MessageInput";
 import { MessageClose, IMessageClose } from "./messages/MessageClose";
@@ -15,8 +15,8 @@ export type MutexoMessage
     | MessageLock
     | MessageInput
     | MessageOutput
-    | MessageSuccess
-    | MessageFailure
+    | MessageMutexSuccess
+    | MessageMutexFailure
     | MessageClose
     | MessageError;
 
@@ -29,8 +29,8 @@ export function isMutexoMessage( stuff: any ): stuff is MutexoMessage
             stuff instanceof MessageLock    ||
             stuff instanceof MessageInput   ||
             stuff instanceof MessageOutput  ||
-            stuff instanceof MessageSuccess ||
-            stuff instanceof MessageFailure ||
+            stuff instanceof MessageMutexSuccess ||
+            stuff instanceof MessageMutexFailure ||
             stuff instanceof MessageClose   ||
             stuff instanceof MessageError
         )
@@ -42,8 +42,8 @@ export type IMutexoMessage
     | IMessageLock
     | IMessageInput
     | IMessageOutput
-    | IMessageSuccess
-    | IMessageFailure
+    | IMessageMutexSuccess
+    | IMessageMutexFailure
     | IMessageClose
     | IMessageError;
 
@@ -79,8 +79,8 @@ export function mutexoMessageFromCborObj( cbor: CborObj ): MutexoMessage
     if( index === 1 ) return MessageLock.fromCborObj( cbor );
     if( index === 2 ) return MessageInput.fromCborObj( cbor );
     if( index === 3 ) return MessageOutput.fromCborObj( cbor );
-    if( index === 4 ) return MessageSuccess.fromCborObj( cbor );
-    if( index === 5 ) return MessageFailure.fromCborObj( cbor );
+    if( index === 4 ) return MessageMutexSuccess.fromCborObj( cbor );
+    if( index === 5 ) return MessageMutexFailure.fromCborObj( cbor );
     if( index === 6 ) return MessageClose.fromCborObj( cbor );
     if( index === 7 ) return MessageError.fromCborObj( cbor );
 

@@ -52,13 +52,13 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
     } as FailureData;
 }
 
-export interface IMessageFailure
+export interface IMessageMutexFailure
 {
     id: number,
     failureData: FailureData
 }
 
-function isIMessageFailure( stuff: any ): stuff is IMessageFailure
+function isIMessageMutexFailure( stuff: any ): stuff is IMessageMutexFailure
 {
     return(
         isObject( stuff ) &&
@@ -67,15 +67,15 @@ function isIMessageFailure( stuff: any ): stuff is IMessageFailure
     );
 }
 
-export class MessageFailure
-    implements ToCbor, ToCborObj, IMessageFailure 
+export class MessageMutexFailure
+    implements ToCbor, ToCborObj, IMessageMutexFailure 
 {
     readonly id: number;
     readonly failureData: FailureData;
 
-    constructor( stuff : IMessageFailure )
+    constructor( stuff : IMessageMutexFailure )
     {
-        if(!( isIMessageFailure( stuff ) )) throw new Error( "invalid `MessageFailure` data provided" );
+        if(!( isIMessageMutexFailure( stuff ) )) throw new Error( "invalid `MessageMutexFailure` data provided" );
 
         this.id = stuff.id;
         this.failureData = stuff.failureData;
@@ -88,7 +88,7 @@ export class MessageFailure
 
     toCborObj(): CborArray
     {
-        if(!( isIMessageFailure( this ) )) throw new Error( "invalid `MessageFailure` data provided" );
+        if(!( isIMessageMutexFailure( this ) )) throw new Error( "invalid `MessageMutexFailure` data provided" );
 
         return new CborArray([
             new CborUInt( MSG_FAILURE_EVENT_TYPE ),
@@ -102,18 +102,18 @@ export class MessageFailure
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor( cbor: CanBeCborString ): MessageFailure
+    static fromCbor( cbor: CanBeCborString ): MessageMutexFailure
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageFailure.fromCborObj( Cbor.parse( bytes ) );
+        return MessageMutexFailure.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj( cbor: CborObj ): MessageFailure
+    static fromCborObj( cbor: CborObj ): MessageMutexFailure
     {
         if(!(
             cbor instanceof CborArray &&
             cbor.array.length >= 3
-        )) throw new Error( "invalid cbor for `MessageFailure`" );
+        )) throw new Error( "invalid cbor for `MessageMutexFailure`" );
 
         const [
             cborEventType,
@@ -126,9 +126,9 @@ export class MessageFailure
             Number( cborEventType.num ) === MSG_FAILURE_EVENT_TYPE &&
             cborId instanceof CborUInt &&
             cborFailureData instanceof CborArray
-        )) throw new Error( "invalid cbor for `MessageFailure`" );
+        )) throw new Error( "invalid cbor for `MessageMutexFailure`" );
 
-        return new MessageFailure({ 
+        return new MessageMutexFailure({ 
             id: Number( cborId.num ) as number,
             failureData: failureDataFromCborObj( cborFailureData ) as FailureData
         });
