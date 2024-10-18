@@ -1,24 +1,14 @@
 import { MutexoMessage, mutexoMessageFromCborObj } from "../MutexoMessage";
 import { ClientReq, clientReqFromCborObj } from "../ClientReq";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { CborArray } from "@harmoniclabs/cbor";
+import { Cbor, CborArray } from "@harmoniclabs/cbor";
 
-export function parseMutexoMessage( stuff: any ): MutexoMessage
+export function parseMutexoMessage( bytes: Uint8Array ): MutexoMessage
 {
-    if(!( 
-        isObject( stuff ) &&
-        stuff instanceof CborArray 
-    )) throw new Error( "invalid cbor mutexo message" );
-
-    return mutexoMessageFromCborObj( stuff );
+    return mutexoMessageFromCborObj( Cbor.parse( bytes ) );
 }
 
-export function parseClientReq( stuff: any ): ClientReq
+export function parseClientReq( bytes: Uint8Array ): ClientReq
 {
-    if(!( 
-        isObject( stuff ) &&
-        stuff instanceof CborArray 
-    )) throw new Error( "invalid cbor client request message" );
-
-    return clientReqFromCborObj( stuff );
+    return clientReqFromCborObj( Cbor.parse( bytes ) );
 }
