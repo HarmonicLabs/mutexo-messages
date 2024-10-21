@@ -35,7 +35,8 @@ export enum ErrorCodes {
     UnknownEvtUTxOSub       = 7,     
     UnknownEvtAddrUnsub     = 8,     
     UnknownEvtUTxOUnsub     = 9,     
-    UnsubMessage            = 10
+    UnknowUnsubMessage     	= 10,
+	UnknownSubFilter		= 11
 }
 
 Object.freeze( ErrorCodes );
