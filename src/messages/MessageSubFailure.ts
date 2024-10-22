@@ -1,6 +1,6 @@
 import { ToCbor, ToCborObj, CborString, Cbor, CborArray, CborUInt, CanBeCborString, forceCborString, CborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { ErrorCodes } from "../utils/constants";
+import { MessageErrorType } from "../utils/constants";
 
 const MSG_SUB_FAILURE_EVENT_TYPE = 9;
 
@@ -16,7 +16,7 @@ function isIMessageSubFailure( stuff: any ): stuff is IMessageSubFailure
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
         Number.isSafeInteger( stuff.errorType ) &&
-        typeof ErrorCodes[ stuff.errorType ] === "string"
+        typeof MessageErrorType[ stuff.errorType ] === "string"
     );
 }
 
@@ -75,7 +75,7 @@ export class MessageSubFailure implements ToCbor, ToCborObj, IMessageSubFailure
             Number( _.num ) === MSG_SUB_FAILURE_EVENT_TYPE &&
             cborId instanceof CborUInt &&
             cborErrorType instanceof CborUInt &&
-            Number( cborErrorType.num ) in ErrorCodes 
+            Number( cborErrorType.num ) in MessageErrorType 
         )) throw new Error( "invalid `MessageSubFailure` data provided" );
 
         return new MessageSubFailure({

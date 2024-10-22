@@ -24,7 +24,7 @@ export enum ClientReqEventIndex {
 
 Object.freeze( ClientReqEventIndex );
 
-export enum ErrorCodes {
+export enum MessageErrorType {
     NotAuth                 = 0, 
     MissingIP               = 1, 
     InvalidAuthToken        = 2, 
@@ -38,8 +38,12 @@ export enum ErrorCodes {
     UnknowUnsubMessage     	= 10,
 	UnknownSubFilter		= 11
 }
+Object.freeze( MessageErrorType );
 
-Object.freeze( ErrorCodes );
+export function messageErrorTypeToString( errorType: MessageErrorType ): string
+{
+    return MessageErrorType[ errorType ];
+}
 
 export enum FailureCodes {
     NoUTxOFreed             = 0, 

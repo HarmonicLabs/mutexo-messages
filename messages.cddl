@@ -65,7 +65,7 @@ successData
     = [ 0, [+ utxoRef] ]; utxos were freed
     \ [ 1, [+ utxoRef] ]; utxos were locked
 
-errorType = uint .size 1 ; unsigned integer 1 byte
+; errorType = uint .size 1 ; unsigned integer 1 byte
 errorType = (
     0 ; not authenticated
     \ 1 ; missing Ip
