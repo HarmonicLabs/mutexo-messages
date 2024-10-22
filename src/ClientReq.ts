@@ -4,12 +4,14 @@ import { ClientReqLock, IClientReqLock } from "./clientReqs/ClientReqLock";
 import { ClientUnsub, IClientUnsub } from "./clientReqs/ClientUnsub";
 import { ClientSub, IClientSub } from "./clientReqs/ClientSub";
 import { isObject } from "@harmoniclabs/obj-utils";
+import { IMessageClose, MessageClose } from "./messages";
 
 export type ClientReq
     = ClientReqFree
     | ClientReqLock
     | ClientSub
-    | ClientUnsub;
+    | ClientUnsub
+    | MessageClose;
 
 export function isClientReq( stuff: any ): stuff is ClientReq
 {
@@ -19,7 +21,8 @@ export function isClientReq( stuff: any ): stuff is ClientReq
             stuff instanceof ClientReqFree  ||
             stuff instanceof ClientReqLock  ||
             stuff instanceof ClientSub      ||
-            stuff instanceof ClientUnsub
+            stuff instanceof ClientUnsub    ||
+            stuff instanceof MessageClose
         )
     );
 }
@@ -28,7 +31,8 @@ export type IClientReq
     = IClientReqFree
     | IClientReqLock
     | IClientSub
-    | IClientUnsub;
+    | IClientUnsub
+    | IMessageClose
 
 export function clientReqFromCbor( cbor: CanBeCborString ): ClientReq
 {
@@ -54,6 +58,7 @@ export function clientReqFromCborObj( cbor: CborObj ): ClientReq
     if( index === 1 ) return ClientReqLock.fromCborObj( cbor );
     if( index === 2 ) return ClientSub.fromCborObj( cbor );
     if( index === 3 ) return ClientUnsub.fromCborObj( cbor );
+    if( index === 6 ) return new MessageClose();
 
     throw new Error( "invalid cbor for `ClientReq`; unknown index: " + index );
 }
