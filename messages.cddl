@@ -28,6 +28,7 @@ clientReq
     \ clientReqLock
     \ clientSub
     \ clientUnsub
+    \ clientClose
 
 ; messages sent from the client to the server
 clientReqFree = [ 0, id, [ + utxoRef ] ];
@@ -39,6 +40,8 @@ clientReqLock = [
 ];
 clientSub = [ 2, id, eventType, [ * filter ] ];
 clientUnsub = [ 3, id, eventType, [ * filter ] ];
+
+clientClose = msgClose; [ 6 ];
 
 eventType = uint .size 1 ; unsigned integer 1 byte
 ; 0: Free
