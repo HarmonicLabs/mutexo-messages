@@ -1,7 +1,6 @@
 import { MutexoMessage, mutexoMessageFromCborObj } from "../MutexoMessage";
 import { ClientReq, clientReqFromCborObj } from "../ClientReq";
-import { isObject } from "@harmoniclabs/obj-utils";
-import { Cbor, CborArray } from "@harmoniclabs/cbor";
+import { Cbor } from "@harmoniclabs/cbor";
 
 export function parseMutexoMessage( bytes: Uint8Array ): MutexoMessage
 {
