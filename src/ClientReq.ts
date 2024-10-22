@@ -58,7 +58,7 @@ export function clientReqFromCborObj( cbor: CborObj ): ClientReq
     if( index === 1 ) return ClientReqLock.fromCborObj( cbor );
     if( index === 2 ) return ClientSub.fromCborObj( cbor );
     if( index === 3 ) return ClientUnsub.fromCborObj( cbor );
-    if( index === 6 ) return new MessageClose();
+    if( index === 6 ) return MessageClose.fromCborObj( cbor );
 
     throw new Error( "invalid cbor for `ClientReq`; unknown index: " + index );
 }
