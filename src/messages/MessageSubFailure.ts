@@ -79,8 +79,8 @@ export class MessageSubFailure implements ToCbor, ToCborObj, IMessageSubFailure
         )) throw new Error( "invalid `MessageSubFailure` data provided" );
 
         return new MessageSubFailure({
-            id: Number( cborId.num ) as number,
-            errorType: Number( cborErrorType.num ) as number
+            id: Number( cborId.num ),
+            errorType: Number( cborErrorType.num )
         });
     }
 

@@ -69,7 +69,7 @@ export class MessageSubSuccess implements ToCbor, ToCborObj, IMessageSubSuccess
         )) throw new Error( "invalid cbor for `MessageSubSuccess`" );
 
         return new MessageSubSuccess({
-            id: Number( cborId.num ) as number
+            id: Number( cborId.num )
         });
     }
 

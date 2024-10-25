@@ -77,8 +77,8 @@ export class ClientSub implements ToCbor, ToCborObj, IClientSub
         )) throw new Error( "invalid cbor for `ClientSub`" );
         
         return new ClientSub({ 
-            id: Number( cborId.num ) as number,
-            eventType: Number( cborEventType.num ) as number, 
+            id: Number( cborId.num ),
+            eventType: Number( cborEventType.num ), 
             filters: cborFilters.array.map( filterFromCborObj ) as Filter[]
         });
     }

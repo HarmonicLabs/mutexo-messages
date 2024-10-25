@@ -76,9 +76,9 @@ export class ClientUnsub implements ToCbor, ToCborObj, IClientUnsub
         )) throw new Error( "invalid cbor for `ClientUnsub`" );
 
         return new ClientUnsub({ 
-            id: Number( cborId.num ) as number,
-            eventType: Number( cborEventType.num ) as number, 
-            filters: cborFilters.array.map( filterFromCborObj ) as Filter[]
+            id: Number( cborId.num ),
+            eventType: Number( cborEventType.num ), 
+            filters: cborFilters.array.map( filterFromCborObj )
         });
     }
 

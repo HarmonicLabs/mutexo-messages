@@ -29,7 +29,7 @@ function successDataToCborObj( stuff: SuccessData ): CborArray {
 function successDataFromCborObj( cbor: CborObj ): SuccessData {
     if (!(
         cbor instanceof CborArray &&
-        Array.isArray(cbor.array) &&
+        // Array.isArray(cbor.array) &&
         cbor.array.length >= 2
     )) throw new Error( "invalid `SuccessData` data provided" );
 
@@ -44,7 +44,7 @@ function successDataFromCborObj( cbor: CborObj ): SuccessData {
     )) throw new Error("invalid cbor for `SuccessData`");
 
     return {
-        successType: Number(cborSuccessType.num) as number,
+        successType: Number(cborSuccessType.num),
         utxoRefs: cborPayload.array.map(( cborUtxo ) => ( TxOutRef.fromCborObj( cborUtxo ) ))
     } as SuccessData;
 }
@@ -113,13 +113,12 @@ export class MessageMutexSuccess
         if (!(
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_SUCCESS_EVENT_TYPE &&
-            cborId instanceof CborUInt &&
-            cborSuccessData instanceof CborArray
+            cborId instanceof CborUInt
         )) throw new Error("invalid cbor for `MessageMutexSuccess`");
 
         return new MessageMutexSuccess({
-            id: Number( cborId.num ) as number,
-            successData: successDataFromCborObj(cborSuccessData) as SuccessData
+            id: Number( cborId.num ),
+            successData: successDataFromCborObj(cborSuccessData)
         });
     }
     

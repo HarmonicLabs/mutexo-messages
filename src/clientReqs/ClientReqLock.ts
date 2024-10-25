@@ -85,8 +85,8 @@ export class ClientReqLock implements ToCbor, ToCborObj, IClientReqLock
         }
 
         return new ClientReqLock({ 
-            id: Number( cbor.array[1].num ) as number,
-            utxoRefs: cbor.array[2].array.map( TxOutRef.fromCborObj ) as TxOutRef[], 
+            id: Number( cbor.array[1].num ),
+            utxoRefs: cbor.array[2].array.map( TxOutRef.fromCborObj ),
             required 
         });
     }

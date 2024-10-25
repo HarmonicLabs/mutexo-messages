@@ -67,14 +67,12 @@ export class MessageOutput
 
         if(!( 
             cborEventType instanceof CborUInt &&
-            Number( cborEventType.num ) === MSG_OUTPUT_EVENT_TYPE &&
-            cborUTxORef instanceof CborArray &&
-            cborAddr instanceof CborArray
+            Number( cborEventType.num ) === MSG_OUTPUT_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageOutput`" );
 
         return new MessageOutput({
-            utxoRef: TxOutRef.fromCborObj( cborUTxORef ) as TxOutRef,
-            addr: Address.fromCborObj( cborAddr ) as Address
+            utxoRef: TxOutRef.fromCborObj( cborUTxORef ),
+            addr: Address.fromCborObj( cborAddr )
         });
     }
     

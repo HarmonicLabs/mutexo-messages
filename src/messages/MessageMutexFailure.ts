@@ -1,7 +1,7 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { FailureCodes } from "../utils/constants";
+import { FailureCodes, MessageErrorType } from "../utils/constants";
 
 const MSG_FAILURE_EVENT_TYPE = 5;
 
@@ -32,7 +32,7 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
 {
     if(!(
         cbor instanceof CborArray &&
-        Array.isArray( cbor.array ) &&
+        // Array.isArray( cbor.array ) &&
         cbor.array.length >= 2
     )) throw new Error( "invalid `FailureData` data provided" );
 
@@ -47,7 +47,7 @@ function failureDataFromCborObj( cbor: CborObj ): FailureData
     )) throw new Error( "invalid cbor for `FailureData`" );
 
     return {
-        failureType: Number( cborFailureType.num ) as number,
+        failureType: Number( cborFailureType.num ),
         utxoRefs: cborPayload.array.map( ( cborUtxo ) => TxOutRef.fromCborObj( cborUtxo ) )
     } as FailureData;
 }
@@ -70,7 +70,7 @@ function isIMessageMutexFailure( stuff: any ): stuff is IMessageMutexFailure
 export class MessageMutexFailure
     implements ToCbor, ToCborObj, IMessageMutexFailure 
 {
-    readonly id: number;
+    readonly id: MessageErrorType;
     readonly failureData: FailureData;
 
     constructor( stuff : IMessageMutexFailure )
@@ -124,8 +124,7 @@ export class MessageMutexFailure
         if(!( 
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_FAILURE_EVENT_TYPE &&
-            cborId instanceof CborUInt &&
-            cborFailureData instanceof CborArray
+            cborId instanceof CborUInt
         )) throw new Error( "invalid cbor for `MessageMutexFailure`" );
 
         return new MessageMutexFailure({ 

@@ -8,7 +8,7 @@ export function filterFromCborObj(cbor: CborObj): Filter
 {
     if(!(
         cbor instanceof CborArray &&
-        cbor.array.length >= 2 &&
+        cbor.array.length >= 1 &&
         cbor.array[0] instanceof CborUInt
     )) throw new Error("Invalid CBOR for Filter");
 

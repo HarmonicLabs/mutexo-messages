@@ -61,21 +61,21 @@ export class ClientReqFree implements ToCbor, ToCborObj, IClientReqFree
         )) throw new Error("invalid cbor for `ClientReqFree`");
 
         const [ 
-            _, 
+            _id, 
             cborId, 
             cborUtxoRefs 
         ] = cbor.array;
 
         if (!(
-            _ instanceof CborUInt &&
-            Number( _.num ) === CLIENT_REQ_FREE_TYPE &&
+            _id instanceof CborUInt &&
+            Number( _id.num ) === CLIENT_REQ_FREE_TYPE &&
             cborId instanceof CborUInt &&
             cborUtxoRefs instanceof CborArray
         )) throw new Error("invalid cbor for `ClientReqFree`");
 
         return new ClientReqFree({ 
-            id: Number( cborId.num ) as number,
-            utxoRefs: cborUtxoRefs.array.map(TxOutRef.fromCborObj) as TxOutRef[] 
+            id: Number( cborId.num ),
+            utxoRefs: cborUtxoRefs.array.map(TxOutRef.fromCborObj)
         });
     }
 

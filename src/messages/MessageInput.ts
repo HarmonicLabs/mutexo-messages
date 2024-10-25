@@ -74,8 +74,6 @@ export class MessageInput
         if (!(
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_INPUT_EVENT_TYPE &&
-            cborUTxORef instanceof CborArray &&
-            cborAddr instanceof CborArray &&
             ( 
                 cborTxHash instanceof CborBytes && 
                 cborTxHash.bytes.length === 32

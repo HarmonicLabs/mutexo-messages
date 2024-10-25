@@ -67,14 +67,12 @@ export class MessageFree
 
         if(!( 
             cborEventType instanceof CborUInt &&
-            Number( cborEventType.num ) === MSG_FREE_EVENT_TYPE &&
-            cborUTxORef instanceof CborArray &&
-            cborAddr instanceof CborArray
+            Number( cborEventType.num ) === MSG_FREE_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageFree`" );
 
         return new MessageFree({
-            utxoRef: TxOutRef.fromCborObj( cborUTxORef ) as TxOutRef,
-            addr: Address.fromCborObj( cborAddr ) as Address
+            utxoRef: TxOutRef.fromCborObj( cborUTxORef ),
+            addr: Address.fromCborObj( cborAddr )
         });
     }
 
