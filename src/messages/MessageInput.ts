@@ -15,7 +15,7 @@ function isIMessageInput(stuff: any): stuff is IMessageInput {
         isObject(stuff) &&
         stuff.utxoRef instanceof TxOutRef &&
         stuff.addr instanceof Address &&
-        stuff.txHash instanceof Uint8Array && stuff.txHash.length === 64
+        stuff.txHash instanceof Uint8Array && stuff.txHash.length === 32
     );
 }
 
