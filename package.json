@@ -19,7 +19,7 @@
         "test": "jest"
     },
     "dependencies": {
-        "@harmoniclabs/cardano-ledger-ts": "^0.2.6",
+        "@harmoniclabs/cardano-ledger-ts": "^0.2.7",
         "@harmoniclabs/cbor": "^1.1.4",
         "@harmoniclabs/obj-utils": "^1.0.0",
         "@harmoniclabs/uint8array-utils": "^1.0.0"
