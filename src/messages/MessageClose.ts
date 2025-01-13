@@ -19,6 +19,7 @@ export class Close
     constructor( stuff?: IClose ) {}
 
     satisfiesFilters( filters: Filter[] ): boolean { return true; }
+    satisfiesFilter( filter: Filter ): boolean { return true; }
 
     toCbor(): CborString
     {
