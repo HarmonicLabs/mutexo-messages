@@ -1,8 +1,8 @@
 export const hexChars = Object.freeze( Array.from( "0123456789abcdef" ) );
 
 export enum MutexoEventIndex {
-    Free                    = 0, 
-    Lock                    = 1, 
+    MutexoFree                    = 0, 
+    MutexoLock                    = 1, 
     MutexoInput             = 2, 
     MutexoOutput            = 3, 
     MtxSuccess              = 4, 
@@ -16,8 +16,8 @@ export enum MutexoEventIndex {
 Object.freeze( MutexoEventIndex );
 
 export enum ClientReqEventIndex {
-    Free                    = 0, 
-    Lock                    = 1, 
+    MutexoFree                    = 0, 
+    MutexoLock                    = 1, 
     MutexoInput             = 2, 
     MutexoOutput            = 3
 }
@@ -81,14 +81,14 @@ export function mutexoErrorCodeToErrorMessage( code: ErrorCode ): string
 
 export enum FailureCodes {
     NoUTxOFreed             = 0, 
-    NoUTxOLocked            = 1, 
+    NoUTxOMutexoLocked            = 1, 
 }
 
 Object.freeze( FailureCodes );
 
 export enum SuccessCodes {
     UTxOFreed             = 0, 
-    UTxOLocked            = 1, 
+    UTxOMutexoLocked            = 1, 
 }
 
 Object.freeze( SuccessCodes );

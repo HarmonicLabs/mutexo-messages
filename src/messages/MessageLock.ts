@@ -7,12 +7,12 @@ import { UtxoFilter } from "../clientReqs/filters/UtxoFilter";
 
 const MSG_LOCK_EVENT_TYPE = 1;
 
-export interface ILock {
+export interface IMutexoLock {
     utxoRef: TxOutRef,
     addr: Address
 }
 
-function isIMessageLock( stuff: any ): stuff is ILock {
+function isIMessageMutexoLock( stuff: any ): stuff is IMutexoLock {
     return (
         isObject( stuff ) &&
         stuff.utxoRef instanceof TxOutRef &&
@@ -20,14 +20,14 @@ function isIMessageLock( stuff: any ): stuff is ILock {
     );
 }
 
-export class Lock
-    implements ToCbor, ToCborObj, ILock
+export class MutexoLock
+    implements ToCbor, ToCborObj, IMutexoLock
 {
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
-    constructor(stuff: ILock) {
-        if (!( isIMessageLock(stuff) )) throw new Error( "invalid `MessageLock` data provided" );
+    constructor(stuff: IMutexoLock) {
+        if (!( isIMessageMutexoLock(stuff) )) throw new Error( "invalid `MessageMutexoLock` data provided" );
 
         this.utxoRef = stuff.utxoRef;
         this.addr = stuff.addr;
@@ -53,7 +53,7 @@ export class Lock
     }
 
     toCborObj(): CborArray {
-        if (!( isIMessageLock( this ) )) throw new Error( "invalid `MessageLock` data provided" );
+        if (!( isIMessageMutexoLock( this ) )) throw new Error( "invalid `MessageMutexoLock` data provided" );
 
         return new CborArray([
             new CborUInt( MSG_LOCK_EVENT_TYPE ),
@@ -66,16 +66,16 @@ export class Lock
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor( cbor: CanBeCborString ): Lock {
+    static fromCbor( cbor: CanBeCborString ): MutexoLock {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return Lock.fromCborObj( Cbor.parse(bytes) );
+        return MutexoLock.fromCborObj( Cbor.parse(bytes) );
     }
 
-    static fromCborObj( cbor: CborObj ): Lock {
+    static fromCborObj( cbor: CborObj ): MutexoLock {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length >= 3
-        )) throw new Error( "invalid cbor for `MessageLock`" );
+        )) throw new Error( "invalid cbor for `MessageMutexoLock`" );
 
         const [
             cborEventType,
@@ -86,9 +86,9 @@ export class Lock
         if(!( 
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_LOCK_EVENT_TYPE
-        )) throw new Error( "invalid cbor for `MessageLock`" );
+        )) throw new Error( "invalid cbor for `MessageMutexoLock`" );
 
-        return new Lock({
+        return new MutexoLock({
             utxoRef: TxOutRef.fromCborObj( cborUTxORef ),
             addr: Address.fromCborObj( cborAddr )
         });

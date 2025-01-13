@@ -3,20 +3,23 @@ import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { FailureCodes, ErrorCode } from "../utils/constants";
 import { Filter } from "../clientReqs/filters/Filter";
+import { isMutexOp, MutexOp } from "./utils/MutexOp";
 
 const MSG_FAILURE_EVENT_TYPE = 5;
 
 export interface IMutexFailure
 {
     id: number,
+    mutexOp: MutexOp,
     utxoRefs: TxOutRef[],
 }
 
-function isIMessageMutexFailure( stuff: any ): stuff is IMutexFailure
+function isIMutexFailure( stuff: any ): stuff is IMutexFailure
 {
     return(
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
+        isMutexOp( stuff.mutexOp ) &&
         Array.isArray( stuff.utxoRefs ) &&
         stuff.utxoRefs.every((ref: any) => ref instanceof TxOutRef)
     );
@@ -26,13 +29,15 @@ export class MutexFailure
     implements ToCbor, ToCborObj, IMutexFailure 
 {
     readonly id: ErrorCode;
+    readonly mutexOp: MutexOp;
     readonly utxoRefs: TxOutRef[];
 
     constructor( stuff : IMutexFailure )
     {
-        if(!( isIMessageMutexFailure( stuff ) )) throw new Error( "invalid `MessageMutexFailure` data provided" );
+        if(!( isIMutexFailure( stuff ) )) throw new Error( "invalid `MessageMutexFailure` data provided" );
 
         this.id = stuff.id;
+        this.mutexOp = stuff.mutexOp;
         this.utxoRefs = stuff.utxoRefs.slice();
     }
 
@@ -46,7 +51,7 @@ export class MutexFailure
 
     toCborObj(): CborArray
     {
-        if(!( isIMessageMutexFailure( this ) )) throw new Error( "invalid `MessageMutexFailure` data provided" );
+        if(!( isIMutexFailure( this ) )) throw new Error( "invalid `MessageMutexFailure` data provided" );
 
         return new CborArray([
             new CborUInt( MSG_FAILURE_EVENT_TYPE ),
@@ -76,6 +81,7 @@ export class MutexFailure
         const [
             cborEventType,
             cborId,
+            cborMutexOp,
             cborUtxoRefs
         ] = cbor.array;
 
@@ -83,11 +89,14 @@ export class MutexFailure
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_FAILURE_EVENT_TYPE &&
             cborId instanceof CborUInt &&
+            cborMutexOp instanceof CborUInt &&
+            isMutexOp( Number( cborMutexOp.num ) ) &&
             cborUtxoRefs instanceof CborArray
         )) throw new Error( "invalid cbor for `MessageMutexFailure`" );
 
         return new MutexFailure({ 
             id: Number( cborId.num ),
+            mutexOp: Number( cborMutexOp.num ),
             utxoRefs: cborUtxoRefs.array.map( TxOutRef.fromCborObj )
         });
     }

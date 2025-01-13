@@ -7,13 +7,13 @@ import { MutexoOutput, IMutexoOutput } from "./messages/MessageOutput";
 import { MutexoInput, IMutexoInput } from "./messages/MessageInput";
 import { Close, IClose } from "./messages/MessageClose";
 import { MutexoError, IMutexoError } from "./messages/MessageError";
-import { Free, IFree } from "./messages/MessageFree";
-import { Lock, ILock } from "./messages/MessageLock";
+import { MutexoFree, IMutexoFree } from "./messages/MessageFree";
 import { isObject } from "@harmoniclabs/obj-utils";
+import { IMutexoLock, MutexoLock } from "./messages/MessageLock";
 
 export type MutexoMessage
-    = Free
-    | Lock
+    = MutexoFree
+    | MutexoLock
     | MutexoInput
     | MutexoOutput
     | MutexSuccess
@@ -28,8 +28,8 @@ export function isMutexoMessage( stuff: any ): stuff is MutexoMessage
     return(
         isObject( stuff ) && 
         (
-            stuff instanceof Free           ||
-            stuff instanceof Lock           ||
+            stuff instanceof MutexoFree           ||
+            stuff instanceof MutexoLock           ||
             stuff instanceof MutexoInput    ||
             stuff instanceof MutexoOutput   ||
             stuff instanceof MutexSuccess   ||
@@ -43,8 +43,8 @@ export function isMutexoMessage( stuff: any ): stuff is MutexoMessage
 }
 
 export type IMutexoMessage
-    = IFree
-    | ILock
+    = IMutexoFree
+    | IMutexoLock
     | IMutexoInput
     | IMutexoOutput
     | IMutexSuccess
@@ -74,8 +74,8 @@ export function mutexoMessageFromCborObj( cbor: CborObj ): MutexoMessage
 
     const index = Number( cbor.array[0].num );
 
-    if( index === 0 ) return Free.fromCborObj( cbor );
-    if( index === 1 ) return Lock.fromCborObj( cbor );
+    if( index === 0 ) return MutexoFree.fromCborObj( cbor );
+    if( index === 1 ) return MutexoLock.fromCborObj( cbor );
     if( index === 2 ) return MutexoInput.fromCborObj( cbor );
     if( index === 3 ) return MutexoOutput.fromCborObj( cbor );
     if( index === 4 ) return MutexSuccess.fromCborObj( cbor );

@@ -3,11 +3,13 @@ import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { SuccessCodes } from "../utils/constants";
 import { Filter } from "../clientReqs/filters/Filter";
+import { isMutexOp, MutexOp } from "./utils/MutexOp";
 
 const MSG_SUCCESS_EVENT_TYPE = 4;
 
 export interface IMutexSuccess {
     id: number,
+    mutexOp: MutexOp,
     utxoRefs: TxOutRef[],
 }
 
@@ -15,6 +17,7 @@ function isIMessageMutexSuccess( stuff: any ): stuff is IMutexSuccess {
     return (
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
+        isMutexOp( stuff.mutexOp ) &&
         Array.isArray( stuff.successData ) &&
         stuff.successData.every((ref: any) => ref instanceof TxOutRef)
     );
@@ -24,12 +27,14 @@ export class MutexSuccess
     implements ToCbor, ToCborObj, IMutexSuccess
 {
     readonly id: number;
+    readonly mutexOp: MutexOp;
     readonly utxoRefs: TxOutRef[];
 
     constructor(stuff: IMutexSuccess) {
         if (!( isIMessageMutexSuccess( stuff ) )) throw new Error( "invalid `MessageMutexSuccess` data provided" );
 
         this.id = stuff.id;
+        this.mutexOp = stuff.mutexOp;
         this.utxoRefs = stuff.utxoRefs.slice();
     }
 
@@ -68,6 +73,7 @@ export class MutexSuccess
         const [
             cborEventType,
             cborId,
+            cborMutexOp,
             cborUtxoRefs
         ] = cbor.array;
 
@@ -75,11 +81,14 @@ export class MutexSuccess
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_SUCCESS_EVENT_TYPE &&
             cborId instanceof CborUInt &&
+            cborMutexOp instanceof CborUInt &&
+            isMutexOp( Number( cborMutexOp.num ) ) &&
             cborUtxoRefs instanceof CborArray
         )) throw new Error("invalid cbor for `MessageMutexSuccess`");
 
         return new MutexSuccess({
             id: Number( cborId.num ),
+            mutexOp: Number( cborMutexOp.num ),
             utxoRefs: cborUtxoRefs.array.map( TxOutRef.fromCborObj )
         });
     }

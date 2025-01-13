@@ -6,12 +6,12 @@ import { AddrFilter, UtxoFilter } from "../clientReqs";
 
 const MSG_FREE_EVENT_TYPE = 0;
 
-export interface IFree {
+export interface IMutexoFree {
     utxoRef: TxOutRef,
     addr: Address
 }
 
-function isIMessageFree( stuff: any ): stuff is IFree {
+function isIMessageFree( stuff: any ): stuff is IMutexoFree {
     return (
         isObject( stuff ) &&
         stuff.utxoRef instanceof TxOutRef &&
@@ -19,13 +19,13 @@ function isIMessageFree( stuff: any ): stuff is IFree {
     );
 }
 
-export class Free
-    implements ToCbor, ToCborObj, IFree
+export class MutexoFree
+    implements ToCbor, ToCborObj, IMutexoFree
 {
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
-    constructor( stuff: IFree ) {
+    constructor( stuff: IMutexoFree ) {
         if(!( isIMessageFree( stuff ) )) throw new Error( "invalid `MessageFree` data provided" );
 
         this.utxoRef = stuff.utxoRef;
@@ -65,12 +65,12 @@ export class Free
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor( cbor: CanBeCborString ): Free {
+    static fromCbor( cbor: CanBeCborString ): MutexoFree {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return Free.fromCborObj( Cbor.parse( bytes ) );
+        return MutexoFree.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj( cbor: CborObj ): Free {
+    static fromCborObj( cbor: CborObj ): MutexoFree {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length >= 3
@@ -87,7 +87,7 @@ export class Free
             Number( cborEventType.num ) === MSG_FREE_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageFree`" );
 
-        return new Free({
+        return new MutexoFree({
             utxoRef: TxOutRef.fromCborObj( cborUTxORef ),
             addr: Address.fromCborObj( cborAddr )
         });
