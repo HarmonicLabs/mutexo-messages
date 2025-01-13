@@ -1,6 +1,7 @@
 import { ToCbor, ToCborObj, CborString, Cbor, CborArray, CborUInt, CanBeCborString, forceCborString, CborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { ErrorCode, isErrorCode, mutexoErrorCodeToErrorMessage } from "../utils/constants";
+import { Filter } from "../clientReqs/filters/Filter";
 
 const MSG_SUB_FAILURE_EVENT_TYPE = 9;
 
@@ -36,6 +37,9 @@ export class SubFailure implements ToCbor, ToCborObj, ISubFailure
         this.id = stuff.id;
         this.errorCode = stuff.errorCode;
     }
+
+    satisfiesFilters( filters: Filter[] ): boolean { return true; }
+    satisfiesFilter( filter: Filter ): boolean { return true; }
 
     toCborBytes(): Uint8Array 
     {

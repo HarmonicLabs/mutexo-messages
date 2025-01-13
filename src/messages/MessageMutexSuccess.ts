@@ -2,63 +2,21 @@ import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceC
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { SuccessCodes } from "../utils/constants";
+import { Filter } from "../clientReqs/filters/Filter";
 
 const MSG_SUCCESS_EVENT_TYPE = 4;
 
-type SuccessData = { 
-    successType: number, 
-    utxoRefs: TxOutRef[] 
-}
-
-function isSuccessData( stuff: any ): stuff is SuccessData {
-    return (
-        isObject(stuff) &&
-        typeof SuccessCodes[ stuff.successType ] === "string" &&
-        Array.isArray( stuff.utxoRefs ) &&
-        stuff.utxoRefs.every(( thing: any ) => ( thing instanceof TxOutRef ))
-    );
-}
-
-function successDataToCborObj( stuff: SuccessData ): CborArray {
-    return new CborArray([
-        new CborUInt(stuff.successType),
-        new CborArray( stuff.utxoRefs.map(( ref ) => ( ref.toCborObj() )) )
-    ]);
-}
-
-function successDataFromCborObj( cbor: CborObj ): SuccessData {
-    if (!(
-        cbor instanceof CborArray &&
-        // Array.isArray(cbor.array) &&
-        cbor.array.length >= 2
-    )) throw new Error( "invalid `SuccessData` data provided" );
-
-    const [
-        cborSuccessType,
-        cborPayload
-    ] = cbor.array;
-
-    if (!(
-        cborSuccessType instanceof CborUInt &&
-        cborPayload instanceof CborArray
-    )) throw new Error("invalid cbor for `SuccessData`");
-
-    return {
-        successType: Number(cborSuccessType.num),
-        utxoRefs: cborPayload.array.map(( cborUtxo ) => ( TxOutRef.fromCborObj( cborUtxo ) ))
-    };
-}
-
 export interface IMutexSuccess {
     id: number,
-    successData: SuccessData
+    utxoRefs: TxOutRef[],
 }
 
 function isIMessageMutexSuccess( stuff: any ): stuff is IMutexSuccess {
     return (
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
-        isSuccessData( stuff.successData )
+        Array.isArray( stuff.successData ) &&
+        stuff.successData.every((ref: any) => ref instanceof TxOutRef)
     );
 }
 
@@ -66,14 +24,17 @@ export class MutexSuccess
     implements ToCbor, ToCborObj, IMutexSuccess
 {
     readonly id: number;
-    readonly successData: SuccessData;
+    readonly utxoRefs: TxOutRef[];
 
     constructor(stuff: IMutexSuccess) {
         if (!( isIMessageMutexSuccess( stuff ) )) throw new Error( "invalid `MessageMutexSuccess` data provided" );
 
         this.id = stuff.id;
-        this.successData = stuff.successData;
+        this.utxoRefs = stuff.utxoRefs.slice();
     }
+
+    satisfiesFilters( filters: Filter[] ): boolean { return true; }
+    satisfiesFilter( filter: Filter ): boolean { return true; }
 
     toCbor(): CborString {
         return Cbor.encode( this.toCborObj() )
@@ -85,7 +46,7 @@ export class MutexSuccess
         return new CborArray([
             new CborUInt( MSG_SUCCESS_EVENT_TYPE ),
             new CborUInt( this.id ),
-            successDataToCborObj( this.successData )
+            new CborArray( this.utxoRefs.map( ref => ref.toCborObj() ))
         ]);
     }
 
@@ -107,18 +68,19 @@ export class MutexSuccess
         const [
             cborEventType,
             cborId,
-            cborSuccessData
+            cborUtxoRefs
         ] = cbor.array;
 
         if (!(
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_SUCCESS_EVENT_TYPE &&
-            cborId instanceof CborUInt
+            cborId instanceof CborUInt &&
+            cborUtxoRefs instanceof CborArray
         )) throw new Error("invalid cbor for `MessageMutexSuccess`");
 
         return new MutexSuccess({
             id: Number( cborId.num ),
-            successData: successDataFromCborObj(cborSuccessData)
+            utxoRefs: cborUtxoRefs.array.map( TxOutRef.fromCborObj )
         });
     }
     

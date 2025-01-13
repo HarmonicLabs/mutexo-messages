@@ -55,13 +55,13 @@ filter
     = [ 0, addr ]
     \ [ 1, utxoRef ]
 
-failureData
-    = [ 0, [* utxoRef] ]; no utxos were freed, sending back utxo requested
-    \ [ 1, [* utxoRef] ]; no utxos were locked, sending back utxo requested
+failureData = [* utxoRef];
+    ; = [ 0, [* utxoRef] ]; no utxos were freed, sending back utxo requested
+    ; \ [ 1, [* utxoRef] ]; no utxos were locked, sending back utxo requested
 
-successData 
-    = [ 0, [+ utxoRef] ]; utxos were freed
-    \ [ 1, [+ utxoRef] ]; utxos were locked
+successData = [+ utxoRef];
+    ; = [ 0, [+ utxoRef] ]; utxos were freed
+    ; \ [ 1, [+ utxoRef] ]; utxos were locked
 
 ; errorCode = uint .size 1 ; unsigned integer 1 byte
 errorCode = (

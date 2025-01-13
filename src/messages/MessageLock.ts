@@ -1,6 +1,9 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { Address, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
+import { Filter } from "../clientReqs/filters/Filter";
+import { AddrFilter } from "../clientReqs/filters/AddrFilter";
+import { UtxoFilter } from "../clientReqs/filters/UtxoFilter";
 
 const MSG_LOCK_EVENT_TYPE = 1;
 
@@ -28,6 +31,21 @@ export class Lock
 
         this.utxoRef = stuff.utxoRef;
         this.addr = stuff.addr;
+    }
+
+    satisfiesFilters( filters: Filter[] ): boolean
+    {
+        return filters.every( this.satisfiesFilter );
+    }
+    satisfiesFilter( filter: Filter ): boolean
+    {
+        if( filter instanceof AddrFilter )
+            return filter.addr.toString() === this.addr.toString();
+
+        if( filter instanceof UtxoFilter )
+            return filter.utxoRef.toString() === this.utxoRef.toString();
+
+        return false;
     }
 
     toCbor(): CborString {

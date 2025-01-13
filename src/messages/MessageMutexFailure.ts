@@ -2,60 +2,14 @@ import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceC
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { FailureCodes, ErrorCode } from "../utils/constants";
+import { Filter } from "../clientReqs/filters/Filter";
 
 const MSG_FAILURE_EVENT_TYPE = 5;
-
-type FailureData = { 
-    failureType: number, 
-    utxoRefs: TxOutRef[] 
-};
-
-function isFailureData( stuff: any ): stuff is FailureData
-{
-    return(
-        isObject( stuff ) &&
-        typeof FailureCodes[ stuff.failureType ] === "string" &&
-        Array.isArray( stuff.utxoRefs ) &&
-        stuff.utxoRefs.every(( thing: any ) => ( thing instanceof TxOutRef ))
-    );
-}
-
-function failureDataToCborObj( stuff: FailureData ): CborArray
-{
-    return new CborArray([
-        new CborUInt( stuff.failureType ),
-        new CborArray( stuff.utxoRefs.map(( ref ) => ( ref.toCborObj() )) )
-    ]);
-}
-
-function failureDataFromCborObj( cbor: CborObj ): FailureData
-{
-    if(!(
-        cbor instanceof CborArray &&
-        // Array.isArray( cbor.array ) &&
-        cbor.array.length >= 2
-    )) throw new Error( "invalid `FailureData` data provided" );
-
-    const [
-        cborFailureType,
-        cborPayload
-    ] = cbor.array;
-
-    if(!( 
-        cborFailureType instanceof CborUInt &&
-        cborPayload instanceof CborArray
-    )) throw new Error( "invalid cbor for `FailureData`" );
-
-    return {
-        failureType: Number( cborFailureType.num ),
-        utxoRefs: cborPayload.array.map( ( cborUtxo ) => TxOutRef.fromCborObj( cborUtxo ) )
-    };
-}
 
 export interface IMutexFailure
 {
     id: number,
-    failureData: FailureData
+    utxoRefs: TxOutRef[],
 }
 
 function isIMessageMutexFailure( stuff: any ): stuff is IMutexFailure
@@ -63,7 +17,8 @@ function isIMessageMutexFailure( stuff: any ): stuff is IMutexFailure
     return(
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
-        isFailureData( stuff.failureData )
+        Array.isArray( stuff.utxoRefs ) &&
+        stuff.utxoRefs.every((ref: any) => ref instanceof TxOutRef)
     );
 }
 
@@ -71,15 +26,18 @@ export class MutexFailure
     implements ToCbor, ToCborObj, IMutexFailure 
 {
     readonly id: ErrorCode;
-    readonly failureData: FailureData;
+    readonly utxoRefs: TxOutRef[];
 
     constructor( stuff : IMutexFailure )
     {
         if(!( isIMessageMutexFailure( stuff ) )) throw new Error( "invalid `MessageMutexFailure` data provided" );
 
         this.id = stuff.id;
-        this.failureData = stuff.failureData;
+        this.utxoRefs = stuff.utxoRefs.slice();
     }
+
+    satisfiesFilters( filters: Filter[] ): boolean { return true; }
+    satisfiesFilter( filter: Filter ): boolean { return true; }
 
     toCbor(): CborString
     {
@@ -93,7 +51,7 @@ export class MutexFailure
         return new CborArray([
             new CborUInt( MSG_FAILURE_EVENT_TYPE ),
             new CborUInt( this.id ),
-            failureDataToCborObj( this.failureData )
+            new CborArray( this.utxoRefs.map( ref => ref.toCborObj() ))
         ]);
     }
 
@@ -118,18 +76,19 @@ export class MutexFailure
         const [
             cborEventType,
             cborId,
-            cborFailureData
+            cborUtxoRefs
         ] = cbor.array;
 
         if(!( 
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_FAILURE_EVENT_TYPE &&
-            cborId instanceof CborUInt
+            cborId instanceof CborUInt &&
+            cborUtxoRefs instanceof CborArray
         )) throw new Error( "invalid cbor for `MessageMutexFailure`" );
 
         return new MutexFailure({ 
             id: Number( cborId.num ),
-            failureData: failureDataFromCborObj( cborFailureData )
+            utxoRefs: cborUtxoRefs.array.map( TxOutRef.fromCborObj )
         });
     }
 
