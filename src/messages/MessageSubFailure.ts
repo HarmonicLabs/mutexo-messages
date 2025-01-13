@@ -1,36 +1,40 @@
 import { ToCbor, ToCborObj, CborString, Cbor, CborArray, CborUInt, CanBeCborString, forceCborString, CborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { MessageErrorType } from "../utils/constants";
+import { ErrorCode, isErrorCode, mutexoErrorCodeToErrorMessage } from "../utils/constants";
 
 const MSG_SUB_FAILURE_EVENT_TYPE = 9;
 
-export interface IMessageSubFailure 
+export interface ISubFailure 
 {
     id: number;
-    errorType: number;
+    errorCode: number;
 }
 
-function isIMessageSubFailure( stuff: any ): stuff is IMessageSubFailure 
+function isIMessageSubFailure( stuff: any ): stuff is ISubFailure 
 {
     return (
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
-        Number.isSafeInteger( stuff.errorType ) &&
-        typeof MessageErrorType[ stuff.errorType ] === "string"
+        isErrorCode( stuff.errorCode )
     );
 }
 
-export class MessageSubFailure implements ToCbor, ToCborObj, IMessageSubFailure 
+export class SubFailure implements ToCbor, ToCborObj, ISubFailure 
 {
     readonly id: number;
-    readonly errorType: number;
+    readonly errorCode: ErrorCode;
 
-    constructor( stuff: IMessageSubFailure ) 
+    get message(): string
+    {
+        return mutexoErrorCodeToErrorMessage( this.errorCode );
+    }
+
+    constructor( stuff: ISubFailure ) 
     {
         if (!( isIMessageSubFailure( stuff ) )) throw new Error( "invalid `MessageSubFailure` data provided" );
 
         this.id = stuff.id;
-        this.errorType = stuff.errorType;
+        this.errorCode = stuff.errorCode;
     }
 
     toCborBytes(): Uint8Array 
@@ -48,16 +52,16 @@ export class MessageSubFailure implements ToCbor, ToCborObj, IMessageSubFailure
         return new CborArray([
             new CborUInt( MSG_SUB_FAILURE_EVENT_TYPE ),
             new CborUInt( this.id ),
-            new CborUInt( this.errorType )
+            new CborUInt( this.errorCode )
         ]);
     }
 
-    static fromCbor( cbor: CanBeCborString ): MessageSubFailure 
+    static fromCbor( cbor: CanBeCborString ): SubFailure 
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageSubFailure.fromCborObj( Cbor.parse( bytes ) );
+        return SubFailure.fromCborObj( Cbor.parse( bytes ) );
     }
-    static fromCborObj( cbor: CborObj ): MessageSubFailure 
+    static fromCborObj( cbor: CborObj ): SubFailure 
     {
         if (!(
             cbor instanceof CborArray &&
@@ -67,20 +71,20 @@ export class MessageSubFailure implements ToCbor, ToCborObj, IMessageSubFailure
         const [
             _,
             cborId,
-            cborErrorType
+            cborErrorCode
         ] = cbor.array;
 
         if (!(
             _ instanceof CborUInt &&
             Number( _.num ) === MSG_SUB_FAILURE_EVENT_TYPE &&
             cborId instanceof CborUInt &&
-            cborErrorType instanceof CborUInt &&
-            Number( cborErrorType.num ) in MessageErrorType 
+            cborErrorCode instanceof CborUInt &&
+            isErrorCode( Number( cborErrorCode.num ) )
         )) throw new Error( "invalid `MessageSubFailure` data provided" );
 
-        return new MessageSubFailure({
+        return new SubFailure({
             id: Number( cborId.num ),
-            errorType: Number( cborErrorType.num )
+            errorCode: Number( cborErrorCode.num )
         });
     }
 

@@ -79,7 +79,7 @@ export class ClientSub implements ToCbor, ToCborObj, IClientSub
         return new ClientSub({ 
             id: Number( cborId.num ),
             eventType: Number( cborEventType.num ), 
-            filters: cborFilters.array.map( filterFromCborObj ) as Filter[]
+            filters: cborFilters.array.map( filterFromCborObj )
         });
     }
 }

@@ -4,12 +4,12 @@ import { isObject } from "@harmoniclabs/obj-utils";
 
 const MSG_OUTPUT_EVENT_TYPE = 3;
 
-export interface IMessageOutput {
+export interface IMutexoOutput {
     utxoRef: TxOutRef,
     addr: Address
 }
 
-function isIMessageOutput( stuff: any ): stuff is IMessageOutput {
+function isIMutexoOutput( stuff: any ): stuff is IMutexoOutput {
     return (
         isObject(stuff) &&
         stuff.utxoRef instanceof TxOutRef &&
@@ -17,14 +17,14 @@ function isIMessageOutput( stuff: any ): stuff is IMessageOutput {
     );
 }
 
-export class MessageOutput
-    implements ToCbor, ToCborObj, IMessageOutput
+export class MutexoOutput
+    implements ToCbor, ToCborObj, IMutexoOutput
 {
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
-    constructor( stuff: IMessageOutput ) {
-        if (!( isIMessageOutput( stuff ) )) throw new Error( "invalid `MessageOutput` data provided" );
+    constructor( stuff: IMutexoOutput ) {
+        if (!( isIMutexoOutput( stuff ) )) throw new Error( "invalid `MessageOutput` data provided" );
 
         this.utxoRef = stuff.utxoRef;
         this.addr = stuff.addr;
@@ -35,7 +35,7 @@ export class MessageOutput
     }
 
     toCborObj(): CborArray {
-        if (!( isIMessageOutput( this ) )) throw new Error( "invalid `MessageOutput` data provided" );
+        if (!( isIMutexoOutput( this ) )) throw new Error( "invalid `MessageOutput` data provided" );
 
         return new CborArray([
             new CborUInt( MSG_OUTPUT_EVENT_TYPE ),
@@ -48,12 +48,12 @@ export class MessageOutput
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor( cbor: CanBeCborString ): MessageOutput {
+    static fromCbor( cbor: CanBeCborString ): MutexoOutput {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageOutput.fromCborObj(Cbor.parse( bytes ));
+        return MutexoOutput.fromCborObj(Cbor.parse( bytes ));
     }
 
-    static fromCborObj( cbor: CborObj ): MessageOutput {
+    static fromCborObj( cbor: CborObj ): MutexoOutput {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length >= 3
@@ -70,7 +70,7 @@ export class MessageOutput
             Number( cborEventType.num ) === MSG_OUTPUT_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageOutput`" );
 
-        return new MessageOutput({
+        return new MutexoOutput({
             utxoRef: TxOutRef.fromCborObj( cborUTxORef ),
             addr: Address.fromCborObj( cborAddr )
         });

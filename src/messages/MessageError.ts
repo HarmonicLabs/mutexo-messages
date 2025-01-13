@@ -1,38 +1,37 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { MessageErrorType, messageErrorTypeToString } from "../utils/constants";
+import { ErrorCode, isErrorCode, messageErrorCodeToString, mutexoErrorCodeToErrorMessage } from "../utils/constants";
 
 const MSG_ERROR_EVENT_TYPE = 7; 
 
-export interface IMessageError
+export interface IMutexoError
 {
-    errorType: MessageErrorType;
+    errorCode: ErrorCode;
 }
 
-function isIMessageError( stuff: any ): stuff is IMessageError
+function isIMutexoError( stuff: any ): stuff is IMutexoError
 {
     return(
         isObject( stuff ) &&
-        Number.isSafeInteger( stuff.errorType ) &&
-        typeof MessageErrorType[ stuff.errorType ] === "string"
+        isErrorCode( stuff.errorCode )
     );
 }
 
-export class MessageError
-    implements ToCbor, ToCborObj, IMessageError 
+export class MutexoError
+    implements ToCbor, ToCborObj, IMutexoError 
 {
-    readonly errorType: MessageErrorType;
+    readonly errorCode: ErrorCode;
 
     get message(): string
     {
-        return messageErrorTypeToString( this.errorType );
+        return mutexoErrorCodeToErrorMessage( this.errorCode );
     }
 
-    constructor( stuff : IMessageError )
+    constructor( stuff : IMutexoError )
     {
-        if(!( isIMessageError( stuff ) )) throw new Error( "invalid `MessageError` data provided" );
+        if(!( isIMutexoError( stuff ) )) throw new Error( "invalid `MessageError` data provided" );
 
-        this.errorType = stuff.errorType;
+        this.errorCode = stuff.errorCode;
     }
 
     toCborBytes(): Uint8Array
@@ -45,20 +44,20 @@ export class MessageError
     }
     toCborObj(): CborArray
     {
-        if(!( isIMessageError( this ) )) throw new Error( "invalid `MessageError` data provided" );
+        if(!( isIMutexoError( this ) )) throw new Error( "invalid `MessageError` data provided" );
 
         return new CborArray([
             new CborUInt( MSG_ERROR_EVENT_TYPE ),
-            new CborUInt( this.errorType )
+            new CborUInt( this.errorCode )
         ]);
     }
     
-    static fromCbor( cbor: CanBeCborString ): MessageError
+    static fromCbor( cbor: CanBeCborString ): MutexoError
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageError.fromCborObj( Cbor.parse( bytes ) );
+        return MutexoError.fromCborObj( Cbor.parse( bytes ) );
     }
-    static fromCborObj( cbor: CborObj ): MessageError
+    static fromCborObj( cbor: CborObj ): MutexoError
     {
         if(!(
             cbor instanceof CborArray &&
@@ -67,18 +66,18 @@ export class MessageError
 
         const [
             cborEventType,
-            cborErrorType
+            cborErrorCode
         ] = cbor.array;
 
         if(!( 
             cborEventType instanceof CborUInt &&
             Number( cborEventType.num ) === MSG_ERROR_EVENT_TYPE &&
-            cborErrorType instanceof CborUInt &&
-            Number( cborErrorType.num ) in MessageErrorType 
+            cborErrorCode instanceof CborUInt &&
+            isErrorCode( Number( cborErrorCode.num ) )
         )) throw new Error( "invalid cbor for `MessageError`" );
 
-        const hdr = new MessageError({ 
-            errorType: Number( cborErrorType.num ) as MessageErrorType
+        const hdr = new MutexoError({ 
+            errorCode: Number( cborErrorCode.num )
         });
 
         return hdr;

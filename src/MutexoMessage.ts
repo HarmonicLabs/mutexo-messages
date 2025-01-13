@@ -1,58 +1,58 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborUInt, forceCborString } from "@harmoniclabs/cbor";
-import { MessageMutexFailure, IMessageMutexFailure } from "./messages/MessageMutexFailure";
-import { MessageMutexSuccess, IMessageMutexSuccess } from "./messages/MessageMutexSuccess";
-import { IMessageSubFailure, MessageSubFailure } from "./messages/MessageSubFailure";
-import { IMessageSubSuccess, MessageSubSuccess } from "./messages/MessageSubSuccess";
-import { MessageOutput, IMessageOutput } from "./messages/MessageOutput";
-import { MessageInput, IMessageInput } from "./messages/MessageInput";
-import { MessageClose, IMessageClose } from "./messages/MessageClose";
-import { MessageError, IMessageError } from "./messages/MessageError";
-import { MessageFree, IMessageFree } from "./messages/MessageFree";
-import { MessageLock, IMessageLock } from "./messages/MessageLock";
+import { MutexFailure, IMutexFailure } from "./messages/MessageMutexFailure";
+import { MutexSuccess, IMutexSuccess } from "./messages/MessageMutexSuccess";
+import { ISubFailure, SubFailure } from "./messages/MessageSubFailure";
+import { ISubSuccess, SubSuccess } from "./messages/MessageSubSuccess";
+import { MutexoOutput, IMutexoOutput } from "./messages/MessageOutput";
+import { MutexoInput, IMutexoInput } from "./messages/MessageInput";
+import { Close, IClose } from "./messages/MessageClose";
+import { MutexoError, IMutexoError } from "./messages/MessageError";
+import { Free, IFree } from "./messages/MessageFree";
+import { Lock, ILock } from "./messages/MessageLock";
 import { isObject } from "@harmoniclabs/obj-utils";
 
 export type MutexoMessage
-    = MessageFree
-    | MessageLock
-    | MessageInput
-    | MessageOutput
-    | MessageMutexSuccess
-    | MessageMutexFailure
-    | MessageClose
-    | MessageError
-    | MessageSubSuccess
-    | MessageSubFailure;
+    = Free
+    | Lock
+    | MutexoInput
+    | MutexoOutput
+    | MutexSuccess
+    | MutexFailure
+    | Close
+    | MutexoError
+    | SubSuccess
+    | SubFailure;
 
 export function isMutexoMessage( stuff: any ): stuff is MutexoMessage
 {
     return(
         isObject( stuff ) && 
         (
-            stuff instanceof MessageFree            ||
-            stuff instanceof MessageLock            ||
-            stuff instanceof MessageInput           ||
-            stuff instanceof MessageOutput          ||
-            stuff instanceof MessageMutexSuccess    ||
-            stuff instanceof MessageMutexFailure    ||
-            stuff instanceof MessageClose           ||
-            stuff instanceof MessageError           ||
-            stuff instanceof MessageSubSuccess      ||
-            stuff instanceof MessageSubFailure
+            stuff instanceof Free           ||
+            stuff instanceof Lock           ||
+            stuff instanceof MutexoInput    ||
+            stuff instanceof MutexoOutput   ||
+            stuff instanceof MutexSuccess   ||
+            stuff instanceof MutexFailure   ||
+            stuff instanceof Close          ||
+            stuff instanceof MutexoError    ||
+            stuff instanceof SubSuccess     ||
+            stuff instanceof SubFailure
         )
     );
 }
 
 export type IMutexoMessage
-    = IMessageFree
-    | IMessageLock
-    | IMessageInput
-    | IMessageOutput
-    | IMessageMutexSuccess
-    | IMessageMutexFailure
-    | IMessageClose
-    | IMessageError
-    | IMessageSubSuccess
-    | IMessageSubFailure;
+    = IFree
+    | ILock
+    | IMutexoInput
+    | IMutexoOutput
+    | IMutexSuccess
+    | IMutexFailure
+    | IClose
+    | IMutexoError
+    | ISubSuccess
+    | ISubFailure;
 
 export function mutexoMessageFromCbor( cbor: CanBeCborString ): MutexoMessage
 {
@@ -74,16 +74,16 @@ export function mutexoMessageFromCborObj( cbor: CborObj ): MutexoMessage
 
     const index = Number( cbor.array[0].num );
 
-    if( index === 0 ) return MessageFree.fromCborObj( cbor );
-    if( index === 1 ) return MessageLock.fromCborObj( cbor );
-    if( index === 2 ) return MessageInput.fromCborObj( cbor );
-    if( index === 3 ) return MessageOutput.fromCborObj( cbor );
-    if( index === 4 ) return MessageMutexSuccess.fromCborObj( cbor );
-    if( index === 5 ) return MessageMutexFailure.fromCborObj( cbor );
-    if( index === 6 ) return MessageClose.fromCborObj( cbor );
-    if( index === 7 ) return MessageError.fromCborObj( cbor );
-    if( index === 8 ) return MessageSubSuccess.fromCborObj( cbor );
-    if( index === 9 ) return MessageSubFailure.fromCborObj( cbor );
+    if( index === 0 ) return Free.fromCborObj( cbor );
+    if( index === 1 ) return Lock.fromCborObj( cbor );
+    if( index === 2 ) return MutexoInput.fromCborObj( cbor );
+    if( index === 3 ) return MutexoOutput.fromCborObj( cbor );
+    if( index === 4 ) return MutexSuccess.fromCborObj( cbor );
+    if( index === 5 ) return MutexFailure.fromCborObj( cbor );
+    if( index === 6 ) return Close.fromCborObj( cbor );
+    if( index === 7 ) return MutexoError.fromCborObj( cbor );
+    if( index === 8 ) return SubSuccess.fromCborObj( cbor );
+    if( index === 9 ) return SubFailure.fromCborObj( cbor );
 
     throw new Error( "invalid cbor for `MutexoMessage`; unknown index: " + index );
 }

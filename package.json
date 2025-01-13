@@ -1,6 +1,6 @@
 {
     "name": "@harmoniclabs/mutexo-messages",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "description": "mutexo messages",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -19,10 +19,10 @@
         "test": "jest"
     },
     "dependencies": {
-        "@harmoniclabs/cardano-ledger-ts": "^0.2.7",
-        "@harmoniclabs/cbor": "^1.1.4",
+        "@harmoniclabs/cardano-ledger-ts": "^0.3.1",
+        "@harmoniclabs/cbor": "^1.5.0",
         "@harmoniclabs/obj-utils": "^1.0.0",
-        "@harmoniclabs/uint8array-utils": "^1.0.0"
+        "@harmoniclabs/uint8array-utils": "^1.0.3"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.22.9",

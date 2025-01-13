@@ -4,12 +4,12 @@ import { isObject } from "@harmoniclabs/obj-utils";
 
 const MSG_FREE_EVENT_TYPE = 0;
 
-export interface IMessageFree {
+export interface IFree {
     utxoRef: TxOutRef,
     addr: Address
 }
 
-function isIMessageFree( stuff: any ): stuff is IMessageFree {
+function isIMessageFree( stuff: any ): stuff is IFree {
     return (
         isObject( stuff ) &&
         stuff.utxoRef instanceof TxOutRef &&
@@ -17,13 +17,13 @@ function isIMessageFree( stuff: any ): stuff is IMessageFree {
     );
 }
 
-export class MessageFree
-    implements ToCbor, ToCborObj, IMessageFree
+export class Free
+    implements ToCbor, ToCborObj, IFree
 {
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
-    constructor( stuff: IMessageFree ) {
+    constructor( stuff: IFree ) {
         if(!( isIMessageFree( stuff ) )) throw new Error( "invalid `MessageFree` data provided" );
 
         this.utxoRef = stuff.utxoRef;
@@ -48,12 +48,12 @@ export class MessageFree
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor( cbor: CanBeCborString ): MessageFree {
+    static fromCbor( cbor: CanBeCborString ): Free {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageFree.fromCborObj( Cbor.parse( bytes ) );
+        return Free.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj( cbor: CborObj ): MessageFree {
+    static fromCborObj( cbor: CborObj ): Free {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length >= 3
@@ -70,7 +70,7 @@ export class MessageFree
             Number( cborEventType.num ) === MSG_FREE_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageFree`" );
 
-        return new MessageFree({
+        return new Free({
             utxoRef: TxOutRef.fromCborObj( cborUTxORef ),
             addr: Address.fromCborObj( cborAddr )
         });

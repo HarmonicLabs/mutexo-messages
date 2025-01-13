@@ -3,8 +3,8 @@ export const hexChars = Object.freeze( Array.from( "0123456789abcdef" ) );
 export enum MutexoEventIndex {
     Free                    = 0, 
     Lock                    = 1, 
-    Input                   = 2, 
-    Output                  = 3, 
+    MutexoInput             = 2, 
+    MutexoOutput            = 3, 
     MtxSuccess              = 4, 
     MtxFailure              = 5, 
     Close                   = 6,     
@@ -18,13 +18,13 @@ Object.freeze( MutexoEventIndex );
 export enum ClientReqEventIndex {
     Free                    = 0, 
     Lock                    = 1, 
-    Input                   = 2, 
-    Output                  = 3
+    MutexoInput             = 2, 
+    MutexoOutput            = 3
 }
 
 Object.freeze( ClientReqEventIndex );
 
-export enum MessageErrorType {
+export enum ErrorCode {
     NotAuth                 = 0, 
     MissingIP               = 1, 
     InvalidAuthToken        = 2, 
@@ -38,11 +38,45 @@ export enum MessageErrorType {
     UnknowUnsubMessage     	= 10,
 	UnknownSubFilter		= 11
 }
-Object.freeze( MessageErrorType );
+Object.freeze( ErrorCode );
 
-export function messageErrorTypeToString( errorType: MessageErrorType ): string
+export function isErrorCode( code: any ): code is ErrorCode
 {
-    return MessageErrorType[ errorType ];
+    return (
+        Number.isSafeInteger( code ) &&
+        typeof ErrorCode[ code ] === "string"
+    );
+}
+
+export function messageErrorCodeToString( errorCode: ErrorCode ): string
+{
+    if( typeof errorCode === "number" )
+    return ErrorCode[ errorCode ];
+
+    return String( errorCode );
+}
+
+export function mutexoErrorCodeToErrorMessage( code: ErrorCode ): string
+{
+    switch( code )
+    {
+        case ErrorCode.NotAuth:             return "Not authenticated";
+        case ErrorCode.MissingIP:           return "Missing IP address";
+        case ErrorCode.InvalidAuthToken:    return "Invalid auth token";
+        case ErrorCode.TooManyRequests:     return "Too many requests; rate limit exceeded";
+        case ErrorCode.NotFollowedAddr:     return "Address not followed";
+        case ErrorCode.UTxONotFound:        return "UTxO not found";
+        case ErrorCode.UnknownEvtAddrSub:   return "unkown event to subscribe by address";
+        case ErrorCode.UnknownEvtUTxOSub:   return "unkown event to subscribe by utxoRef";
+        case ErrorCode.UnknownEvtAddrUnsub: return "unkown event to un-subscribe by address";
+        case ErrorCode.UnknownEvtUTxOUnsub: return "unkown event to un-subscribe by utxoRef";
+        case ErrorCode.UnknowUnsubMessage:  return "unsub message sent; but no event specified";
+        case ErrorCode.UnknownSubFilter:    return "Unknown filter";
+
+        default:
+            // code;
+            return "Unknown error";
+    }
 }
 
 export enum FailureCodes {

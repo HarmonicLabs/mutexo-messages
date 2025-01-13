@@ -46,15 +46,15 @@ function successDataFromCborObj( cbor: CborObj ): SuccessData {
     return {
         successType: Number(cborSuccessType.num),
         utxoRefs: cborPayload.array.map(( cborUtxo ) => ( TxOutRef.fromCborObj( cborUtxo ) ))
-    } as SuccessData;
+    };
 }
 
-export interface IMessageMutexSuccess {
+export interface IMutexSuccess {
     id: number,
     successData: SuccessData
 }
 
-function isIMessageMutexSuccess( stuff: any ): stuff is IMessageMutexSuccess {
+function isIMessageMutexSuccess( stuff: any ): stuff is IMutexSuccess {
     return (
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
@@ -62,13 +62,13 @@ function isIMessageMutexSuccess( stuff: any ): stuff is IMessageMutexSuccess {
     );
 }
 
-export class MessageMutexSuccess
-    implements ToCbor, ToCborObj, IMessageMutexSuccess
+export class MutexSuccess
+    implements ToCbor, ToCborObj, IMutexSuccess
 {
     readonly id: number;
     readonly successData: SuccessData;
 
-    constructor(stuff: IMessageMutexSuccess) {
+    constructor(stuff: IMutexSuccess) {
         if (!( isIMessageMutexSuccess( stuff ) )) throw new Error( "invalid `MessageMutexSuccess` data provided" );
 
         this.id = stuff.id;
@@ -93,12 +93,12 @@ export class MessageMutexSuccess
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor( cbor: CanBeCborString ): MessageMutexSuccess {
+    static fromCbor( cbor: CanBeCborString ): MutexSuccess {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageMutexSuccess.fromCborObj( Cbor.parse( bytes ) );
+        return MutexSuccess.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj( cbor: CborObj ): MessageMutexSuccess {
+    static fromCborObj( cbor: CborObj ): MutexSuccess {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length >= 3
@@ -116,7 +116,7 @@ export class MessageMutexSuccess
             cborId instanceof CborUInt
         )) throw new Error("invalid cbor for `MessageMutexSuccess`");
 
-        return new MessageMutexSuccess({
+        return new MutexSuccess({
             id: Number( cborId.num ),
             successData: successDataFromCborObj(cborSuccessData)
         });

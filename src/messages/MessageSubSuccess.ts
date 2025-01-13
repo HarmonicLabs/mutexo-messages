@@ -3,12 +3,12 @@ import { isObject } from "@harmoniclabs/obj-utils";
 
 const MSG_SUB_SUCCESS_EVENT_TYPE = 8;
 
-export interface IMessageSubSuccess 
+export interface ISubSuccess 
 {
     id: number;
 }
 
-function isIMessageSubSuccess( stuff: any ): stuff is IMessageSubSuccess 
+function isIMessageSubSuccess( stuff: any ): stuff is ISubSuccess 
 {
     return (
         isObject( stuff ) &&
@@ -16,11 +16,11 @@ function isIMessageSubSuccess( stuff: any ): stuff is IMessageSubSuccess
     );
 }
 
-export class MessageSubSuccess implements ToCbor, ToCborObj, IMessageSubSuccess 
+export class SubSuccess implements ToCbor, ToCborObj, ISubSuccess 
 {
     readonly id: number;
 
-    constructor( stuff: IMessageSubSuccess ) 
+    constructor( stuff: ISubSuccess ) 
     {
         if (!( isIMessageSubSuccess( stuff ) )) throw new Error( "invalid `MessageSubSuccess` data provided" );
 
@@ -45,12 +45,12 @@ export class MessageSubSuccess implements ToCbor, ToCborObj, IMessageSubSuccess
         ]);
     }
 
-    static fromCbor( cbor: CanBeCborString ): MessageSubSuccess 
+    static fromCbor( cbor: CanBeCborString ): SubSuccess 
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageSubSuccess.fromCborObj( Cbor.parse( bytes ) );
+        return SubSuccess.fromCborObj( Cbor.parse( bytes ) );
     }
-    static fromCborObj( cbor: CborObj ): MessageSubSuccess 
+    static fromCborObj( cbor: CborObj ): SubSuccess 
     {
         if (!(
             cbor instanceof CborArray &&
@@ -68,7 +68,7 @@ export class MessageSubSuccess implements ToCbor, ToCborObj, IMessageSubSuccess
             cborId instanceof CborUInt
         )) throw new Error( "invalid cbor for `MessageSubSuccess`" );
 
-        return new MessageSubSuccess({
+        return new SubSuccess({
             id: Number( cborId.num )
         });
     }

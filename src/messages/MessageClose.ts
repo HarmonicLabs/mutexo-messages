@@ -1,22 +1,22 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
 
-const MSG_LOCK_EVENT_TYPE = 6;
+const MSG_CLOSE_EVENT_TYPE = 6;
 
-export interface IMessageClose {}
+export interface IClose {}
 
-function isIMessageClose( stuff: any ): stuff is IMessageClose
+function isIMessageClose( stuff: any ): stuff is IClose
 {
     return(
         isObject( stuff )
     );
 }
 
-export class MessageClose
-    implements ToCbor, ToCborObj, IMessageClose 
+export class Close
+    implements ToCbor, ToCborObj, IClose 
 {
     
-    constructor( stuff?: IMessageClose ) {}
+    constructor( stuff?: IClose ) {}
 
     toCbor(): CborString
     {
@@ -28,7 +28,7 @@ export class MessageClose
         if(!( isIMessageClose( this ) )) throw new Error( "invalid `MessageClose` data provided" );
 
         return new CborArray([
-            new CborUInt( MSG_LOCK_EVENT_TYPE ),
+            new CborUInt( MSG_CLOSE_EVENT_TYPE ),
         ]);
     }
 
@@ -37,13 +37,13 @@ export class MessageClose
         return this.toCbor().toBuffer();
     }
     
-    static fromCbor( cbor: CanBeCborString ): MessageClose
+    static fromCbor( cbor: CanBeCborString ): Close
     {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageClose.fromCborObj( Cbor.parse( bytes ) );
+        return Close.fromCborObj( Cbor.parse( bytes ) );
     }
 
-    static fromCborObj( cbor: CborObj ): MessageClose
+    static fromCborObj( cbor: CborObj ): Close
     {
         if(!(
             cbor instanceof CborArray &&
@@ -56,10 +56,10 @@ export class MessageClose
 
         if(!( 
             cborEventType instanceof CborUInt &&
-            Number( cborEventType.num ) === MSG_LOCK_EVENT_TYPE
+            Number( cborEventType.num ) === MSG_CLOSE_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageClose`" );
 
-        const hdr = new MessageClose();
+        const hdr = new Close();
 
         return hdr;
     }

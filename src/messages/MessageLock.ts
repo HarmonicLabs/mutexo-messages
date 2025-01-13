@@ -4,12 +4,12 @@ import { isObject } from "@harmoniclabs/obj-utils";
 
 const MSG_LOCK_EVENT_TYPE = 1;
 
-export interface IMessageLock {
+export interface ILock {
     utxoRef: TxOutRef,
     addr: Address
 }
 
-function isIMessageLock( stuff: any ): stuff is IMessageLock {
+function isIMessageLock( stuff: any ): stuff is ILock {
     return (
         isObject( stuff ) &&
         stuff.utxoRef instanceof TxOutRef &&
@@ -17,13 +17,13 @@ function isIMessageLock( stuff: any ): stuff is IMessageLock {
     );
 }
 
-export class MessageLock
-    implements ToCbor, ToCborObj, IMessageLock
+export class Lock
+    implements ToCbor, ToCborObj, ILock
 {
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
 
-    constructor(stuff: IMessageLock) {
+    constructor(stuff: ILock) {
         if (!( isIMessageLock(stuff) )) throw new Error( "invalid `MessageLock` data provided" );
 
         this.utxoRef = stuff.utxoRef;
@@ -48,12 +48,12 @@ export class MessageLock
         return this.toCbor().toBuffer();
     }
 
-    static fromCbor( cbor: CanBeCborString ): MessageLock {
+    static fromCbor( cbor: CanBeCborString ): Lock {
         const bytes = cbor instanceof Uint8Array ? cbor : forceCborString( cbor ).toBuffer();
-        return MessageLock.fromCborObj( Cbor.parse(bytes) );
+        return Lock.fromCborObj( Cbor.parse(bytes) );
     }
 
-    static fromCborObj( cbor: CborObj ): MessageLock {
+    static fromCborObj( cbor: CborObj ): Lock {
         if (!(
             cbor instanceof CborArray &&
             cbor.array.length >= 3
@@ -70,7 +70,7 @@ export class MessageLock
             Number( cborEventType.num ) === MSG_LOCK_EVENT_TYPE
         )) throw new Error( "invalid cbor for `MessageLock`" );
 
-        return new MessageLock({
+        return new Lock({
             utxoRef: TxOutRef.fromCborObj( cborUTxORef ),
             addr: Address.fromCborObj( cborAddr )
         });
