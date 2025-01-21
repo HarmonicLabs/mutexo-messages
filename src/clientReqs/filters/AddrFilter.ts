@@ -1,8 +1,15 @@
-import { Address } from "@harmoniclabs/cardano-ledger-ts";
+import { Address, AddressStr } from "@harmoniclabs/cardano-ledger-ts";
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 
 export interface IAddrFilter {
-    addr: Address;
+    addr: Address | AddressStr;
+}
+
+export function isIAddrFilter(stuff: any): stuff is IAddrFilter {
+    return (
+        stuff instanceof Object &&
+        (stuff.addr instanceof Address || typeof stuff.addr === "string")
+    );
 }
 
 export class AddrFilter implements ToCbor, ToCborObj, IAddrFilter
@@ -11,7 +18,7 @@ export class AddrFilter implements ToCbor, ToCborObj, IAddrFilter
 
     constructor({ addr }: IAddrFilter)
     {
-        this.addr = addr;
+        this.addr = addr instanceof Address ? addr.clone() : Address.fromString( addr );
     }
 
     toCbor(): CborString

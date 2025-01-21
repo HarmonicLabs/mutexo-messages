@@ -1,6 +1,7 @@
 import { ToCbor, ToCborObj, CborString, Cbor, CborArray, CborUInt, CanBeCborString, forceCborString, CborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { Filter } from "../clientReqs/filters/Filter";
+import { Filter, IFilter } from "../clientReqs/filters/Filter";
+import { ISatisfiesFilter } from "./utils/ISatisfiesFilter";
 
 const MSG_SUB_SUCCESS_EVENT_TYPE = 8;
 
@@ -17,7 +18,7 @@ function isIMessageSubSuccess( stuff: any ): stuff is ISubSuccess
     );
 }
 
-export class SubSuccess implements ToCbor, ToCborObj, ISubSuccess 
+export class SubSuccess implements ToCbor, ToCborObj, ISubSuccess, ISatisfiesFilter
 {
     readonly id: number;
 
@@ -28,8 +29,8 @@ export class SubSuccess implements ToCbor, ToCborObj, ISubSuccess
         this.id = stuff.id;
     }
 
-    satisfiesFilters( filters: Filter[] ): boolean { return true; }
-    satisfiesFilter( filter: Filter ): boolean { return true; }
+    satisfiesFilters( filters: IFilter[] ): boolean { return true; }
+    satisfiesFilter( filter: IFilter ): boolean { return true; }
 
     toCborBytes(): Uint8Array 
     {

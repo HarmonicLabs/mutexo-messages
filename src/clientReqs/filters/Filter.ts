@@ -1,7 +1,8 @@
-import { AddrFilter } from "./AddrFilter";
-import { UtxoFilter } from "./UtxoFilter";
+import { AddrFilter, IAddrFilter, isIAddrFilter } from "./AddrFilter";
+import { IUtxoFilter, UtxoFilter } from "./UtxoFilter";
 import { CborArray, CborObj, CborUInt } from "@harmoniclabs/cbor";
 
+export type IFilter = IAddrFilter | IUtxoFilter;
 export type Filter = AddrFilter | UtxoFilter;
 
 export function filterFromCborObj(cbor: CborObj): Filter
@@ -21,4 +22,11 @@ export function filterFromCborObj(cbor: CborObj): Filter
     }
     
     throw new Error("Invalid CBOR for Filter");
+}
+
+export function forceFilter( filter: IFilter ): Filter
+{
+    if( filter instanceof AddrFilter || filter instanceof UtxoFilter ) return filter;
+
+    return isIAddrFilter( filter ) ? new AddrFilter( filter ) : new UtxoFilter( filter );
 }

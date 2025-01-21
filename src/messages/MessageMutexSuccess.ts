@@ -2,8 +2,9 @@ import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceC
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { SuccessCodes } from "../utils/constants";
-import { Filter } from "../clientReqs/filters/Filter";
+import { Filter, IFilter } from "../clientReqs/filters/Filter";
 import { isMutexOp, MutexOp } from "./utils/MutexOp";
+import { ISatisfiesFilter } from "./utils/ISatisfiesFilter";
 
 const MSG_SUCCESS_EVENT_TYPE = 4;
 
@@ -24,7 +25,7 @@ function isIMessageMutexSuccess( stuff: any ): stuff is IMutexSuccess {
 }
 
 export class MutexSuccess
-    implements ToCbor, ToCborObj, IMutexSuccess
+    implements ToCbor, ToCborObj, IMutexSuccess, ISatisfiesFilter
 {
     readonly id: number;
     readonly mutexOp: MutexOp;
@@ -38,8 +39,8 @@ export class MutexSuccess
         this.utxoRefs = stuff.utxoRefs.slice();
     }
 
-    satisfiesFilters( filters: Filter[] ): boolean { return true; }
-    satisfiesFilter( filter: Filter ): boolean { return true; }
+    satisfiesFilters( filters: IFilter[] ): boolean { return true; }
+    satisfiesFilter( filter: IFilter ): boolean { return true; }
 
     toCbor(): CborString {
         return Cbor.encode( this.toCborObj() )

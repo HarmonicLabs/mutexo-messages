@@ -1,12 +1,12 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
-import { Filter, filterFromCborObj } from "./filters/Filter";
+import { Filter, filterFromCborObj, forceFilter, IFilter } from "./filters/Filter";
 import { isObject } from "@harmoniclabs/obj-utils";
 
 const CLIENT_UNSUB_TYPE = 3;
 export interface IClientUnsub {
     id: number;
     eventType: number;
-    filters: Filter[];
+    filters: IFilter[];
 }
 
 function isIClientUnsub( stuff: any ): stuff is IClientUnsub
@@ -30,7 +30,7 @@ export class ClientUnsub implements ToCbor, ToCborObj, IClientUnsub
 
         this.id = stuff.id;
         this.eventType = stuff.eventType;
-        this.filters = stuff.filters;
+        this.filters = stuff.filters.map( forceFilter );
     }
 
     toCborBytes(): Uint8Array {

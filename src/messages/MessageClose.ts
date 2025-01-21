@@ -1,6 +1,6 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { Filter } from "../clientReqs/filters/Filter";
+import { Filter, IFilter } from "../clientReqs/filters/Filter";
 
 const MSG_CLOSE_EVENT_TYPE = 6;
 
@@ -18,8 +18,8 @@ export class Close
 {
     constructor( stuff?: IClose ) {}
 
-    satisfiesFilters( filters: Filter[] ): boolean { return true; }
-    satisfiesFilter( filter: Filter ): boolean { return true; }
+    satisfiesFilters( filters: IFilter[] ): boolean { return true; }
+    satisfiesFilter( filter: IFilter ): boolean { return true; }
 
     toCbor(): CborString
     {

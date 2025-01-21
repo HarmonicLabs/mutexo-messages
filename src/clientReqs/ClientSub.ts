@@ -1,5 +1,5 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
-import { Filter, filterFromCborObj } from "./filters/Filter";
+import { Filter, filterFromCborObj, forceFilter, IFilter } from "./filters/Filter";
 import { isObject } from "@harmoniclabs/obj-utils";
 
 const CLIENT_SUB_TYPE = 2;
@@ -7,7 +7,7 @@ const CLIENT_SUB_TYPE = 2;
 export interface IClientSub {
     id: number;
     eventType: number;
-    filters: Filter[];
+    filters: IFilter[];
 }
 
 function isIClientSub( stuff: any ): stuff is IClientSub
@@ -31,7 +31,7 @@ export class ClientSub implements ToCbor, ToCborObj, IClientSub
 
         this.id = stuff.id;
         this.eventType = stuff.eventType;
-        this.filters = stuff.filters;
+        this.filters = stuff.filters.map( forceFilter ); 
     }
 
     toCborBytes(): Uint8Array {

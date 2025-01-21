@@ -1,7 +1,8 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { ErrorCode, isErrorCode, messageErrorCodeToString, mutexoErrorCodeToErrorMessage } from "../utils/constants";
-import { Filter } from "../clientReqs/filters/Filter";
+import { Filter, IFilter } from "../clientReqs/filters/Filter";
+import { ISatisfiesFilter } from "./utils/ISatisfiesFilter";
 
 const MSG_ERROR_EVENT_TYPE = 7; 
 
@@ -19,7 +20,7 @@ function isIMutexoError( stuff: any ): stuff is IMutexoError
 }
 
 export class MutexoError
-    implements ToCbor, ToCborObj, IMutexoError 
+    implements ToCbor, ToCborObj, IMutexoError, ISatisfiesFilter
 {
     readonly errorCode: ErrorCode;
 
@@ -35,8 +36,8 @@ export class MutexoError
         this.errorCode = stuff.errorCode;
     }
 
-    satisfiesFilters( filters: Filter[] ): boolean { return true; }
-    satisfiesFilter( filter: Filter ): boolean { return true; }
+    satisfiesFilters( filters: IFilter[] ): boolean { return true; }
+    satisfiesFilter( filter: IFilter ): boolean { return true; }
 
     toCborBytes(): Uint8Array
     {

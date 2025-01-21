@@ -1,7 +1,8 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { Address, TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { Filter, AddrFilter, UtxoFilter } from "../clientReqs/filters";
+import { Filter, AddrFilter, UtxoFilter, forceFilter, IFilter } from "../clientReqs/filters";
+import { ISatisfiesFilter } from "./utils/ISatisfiesFilter";
 
 const MSG_OUTPUT_EVENT_TYPE = 3;
 
@@ -19,7 +20,7 @@ function isIMutexoOutput( stuff: any ): stuff is IMutexoOutput {
 }
 
 export class MutexoOutput
-    implements ToCbor, ToCborObj, IMutexoOutput
+    implements ToCbor, ToCborObj, IMutexoOutput, ISatisfiesFilter
 {
     readonly utxoRef: TxOutRef;
     readonly addr: Address;
@@ -31,13 +32,14 @@ export class MutexoOutput
         this.addr = stuff.addr;
     }
 
-
-    satisfiesFilters( filters: Filter[] ): boolean
+    satisfiesFilters( filters: IFilter[] ): boolean
     {
         return filters.every( this.satisfiesFilter );
     }
-    satisfiesFilter( filter: Filter ): boolean
+    satisfiesFilter( filter: IFilter ): boolean
     {
+        filter = forceFilter( filter );
+        
         if( filter instanceof AddrFilter )
             return filter.addr.toString() === this.addr.toString();
 
