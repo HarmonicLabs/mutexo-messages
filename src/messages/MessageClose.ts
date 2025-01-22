@@ -1,6 +1,7 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { Filter, IFilter } from "../clientReqs/filters/Filter";
+import { ISatisfiesFilter } from "./utils/ISatisfiesFilter";
 
 const MSG_CLOSE_EVENT_TYPE = 6;
 
@@ -14,7 +15,7 @@ function isIMessageClose( stuff: any ): stuff is IClose
 }
 
 export class Close
-    implements ToCbor, ToCborObj, IClose 
+    implements ToCbor, ToCborObj, IClose, ISatisfiesFilter
 {
     constructor( stuff?: IClose ) {}
 
@@ -25,7 +26,6 @@ export class Close
     {
         return Cbor.encode( this.toCborObj() );
     }
-
     toCborObj(): CborArray
     {
         if(!( isIMessageClose( this ) )) throw new Error( "invalid `MessageClose` data provided" );
@@ -34,7 +34,6 @@ export class Close
             new CborUInt( MSG_CLOSE_EVENT_TYPE ),
         ]);
     }
-
     toCborBytes(): Uint8Array
     {
         return this.toCbor().toBuffer();

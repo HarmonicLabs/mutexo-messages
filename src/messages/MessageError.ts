@@ -1,6 +1,6 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { ErrorCode, isErrorCode, messageErrorCodeToString, mutexoErrorCodeToErrorMessage } from "../utils/constants";
+import { ErrorCode, isErrorCode, messageErrorCodeToString, mutexoErrorCodeToErrorMessage } from "../utils/errorCodes";
 import { Filter, IFilter } from "../clientReqs/filters/Filter";
 import { ISatisfiesFilter } from "./utils/ISatisfiesFilter";
 

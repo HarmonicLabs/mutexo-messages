@@ -1,7 +1,7 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { TxOutRef } from "@harmoniclabs/cardano-ledger-ts";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { SuccessCodes } from "../utils/constants";
+import { SuccessCodes } from "../utils/errorCodes";
 import { Filter, IFilter } from "../clientReqs/filters/Filter";
 import { isMutexOp, MutexOp } from "./utils/MutexOp";
 import { ISatisfiesFilter } from "./utils/ISatisfiesFilter";

@@ -10,12 +10,37 @@ import { MutexoError, IMutexoError } from "./messages/MessageError";
 import { MutexoFree, IMutexoFree } from "./messages/MessageFree";
 import { isObject } from "@harmoniclabs/obj-utils";
 import { IMutexoLock, MutexoLock } from "./messages/MessageLock";
+import { MutexoChainEventName, MutexoEventName } from "./events";
 
-export type MutexoMessage
+/** events that are triggered by the server following the chain */
+export type MutexoChainEventMessage
     = MutexoFree
     | MutexoLock
     | MutexoInput
-    | MutexoOutput
+    | MutexoOutput;
+
+export function isMutexoChainEventMessage( stuff: any ): stuff is MutexoChainEventMessage
+{
+    return(
+        stuff instanceof MutexoFree  ||
+        stuff instanceof MutexoLock  ||
+        stuff instanceof MutexoInput ||
+        stuff instanceof MutexoOutput
+    );
+}
+
+export function chainEventMessageToName( msg: MutexoChainEventMessage ): MutexoChainEventName
+{
+    if( msg instanceof MutexoFree ) return "free";
+    if( msg instanceof MutexoLock ) return "lock";
+    if( msg instanceof MutexoInput ) return "input";
+    if( msg instanceof MutexoOutput ) return "output";
+
+    throw new Error( "invalid `MutexoChainEventMessage`" );
+}
+
+export type MutexoMessage
+    = MutexoChainEventMessage
     | MutexSuccess
     | MutexFailure
     | Close
@@ -28,10 +53,7 @@ export function isMutexoMessage( stuff: any ): stuff is MutexoMessage
     return(
         isObject( stuff ) && 
         (
-            stuff instanceof MutexoFree           ||
-            stuff instanceof MutexoLock           ||
-            stuff instanceof MutexoInput    ||
-            stuff instanceof MutexoOutput   ||
+            isMutexoChainEventMessage( stuff )     ||
             stuff instanceof MutexSuccess   ||
             stuff instanceof MutexFailure   ||
             stuff instanceof Close          ||
@@ -40,6 +62,19 @@ export function isMutexoMessage( stuff: any ): stuff is MutexoMessage
             stuff instanceof SubFailure
         )
     );
+}
+
+export function mutexoMessageToName( msg: MutexoMessage ): MutexoEventName
+{
+    if( isMutexoChainEventMessage( msg ) ) return chainEventMessageToName( msg );
+    if( msg instanceof MutexSuccess ) return "mutexSuccess";
+    if( msg instanceof MutexFailure ) return "mutexFailure";
+    if( msg instanceof Close ) return "close";
+    if( msg instanceof MutexoError ) return "error";
+    if( msg instanceof SubSuccess ) return "subSuccess";
+    if( msg instanceof SubFailure ) return "subFailure";
+
+    throw new Error( "invalid `MutexoMessage`" );
 }
 
 export type IMutexoMessage

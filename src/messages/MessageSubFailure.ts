@@ -1,7 +1,7 @@
 import { ToCbor, ToCborObj, CborString, Cbor, CborArray, CborUInt, CanBeCborString, forceCborString, CborObj } from "@harmoniclabs/cbor";
 import { isObject } from "@harmoniclabs/obj-utils";
-import { ErrorCode, isErrorCode, mutexoErrorCodeToErrorMessage } from "../utils/constants";
-import { Filter, IFilter } from "../clientReqs/filters/Filter";
+import { ErrorCode, isErrorCode, mutexoErrorCodeToErrorMessage } from "../utils/errorCodes";
+import { IFilter } from "../clientReqs/filters/Filter";
 import { ISatisfiesFilter } from "./utils/ISatisfiesFilter";
 
 const MSG_SUB_FAILURE_EVENT_TYPE = 9;
