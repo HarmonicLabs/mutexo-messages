@@ -1,11 +1,12 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { Filter, filterFromCborObj, forceFilter, IFilter } from "./filters/Filter";
 import { isObject } from "@harmoniclabs/obj-utils";
+import { isMutexoChainEventIndex, MutexoChainEventIndex } from "../events/MutexoEventIndex";
 
 const CLIENT_UNSUB_TYPE = 3;
 export interface IClientUnsub {
     id: number;
-    eventType: number;
+    chainEventIndex: MutexoChainEventIndex;
     filters: IFilter[];
 }
 
@@ -14,7 +15,7 @@ function isIClientUnsub( stuff: any ): stuff is IClientUnsub
     return(
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
-        typeof stuff.eventType === "number" &&
+        isMutexoChainEventIndex( stuff.chainEventIndex ) &&
         Array.isArray( stuff.filters )
     );
 }
@@ -22,14 +23,14 @@ function isIClientUnsub( stuff: any ): stuff is IClientUnsub
 export class ClientUnsub implements ToCbor, ToCborObj, IClientUnsub 
 {
     readonly id: number;
-    readonly eventType: number;
+    readonly chainEventIndex: MutexoChainEventIndex;
     readonly filters: Filter[];
 
     constructor( stuff: IClientUnsub ) {
         if(!( isIClientUnsub( stuff ) )) throw new Error( "invalid `ClientUnsub` data provided" );
 
         this.id = stuff.id;
-        this.eventType = stuff.eventType;
+        this.chainEventIndex = stuff.chainEventIndex;
         this.filters = stuff.filters.map( forceFilter );
     }
 
@@ -45,7 +46,7 @@ export class ClientUnsub implements ToCbor, ToCborObj, IClientUnsub
         return new CborArray([
             new CborUInt( CLIENT_UNSUB_TYPE ),
             new CborUInt( this.id ),
-            new CborUInt( this.eventType ),
+            new CborUInt( this.chainEventIndex ),
             new CborArray( this.filters.map(( filter ) => ( filter.toCborObj() )) )
         ]);
     }
@@ -77,7 +78,7 @@ export class ClientUnsub implements ToCbor, ToCborObj, IClientUnsub
 
         return new ClientUnsub({ 
             id: Number( cborId.num ),
-            eventType: Number( cborEventType.num ), 
+            chainEventIndex: Number( cborEventType.num ), 
             filters: cborFilters.array.map( filterFromCborObj )
         });
     }

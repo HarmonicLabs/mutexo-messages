@@ -40,6 +40,22 @@ export function isMutexoEventIndex( n: any ): n is MutexoEventIndex
     )
 }
 
+export type MutexoChainEventIndex
+    = MutexoEventIndex.free
+    | MutexoEventIndex.lock
+    | MutexoEventIndex.input
+    | MutexoEventIndex.output;
+
+export function isMutexoChainEventIndex( n: any ): n is MutexoChainEventIndex
+{
+    return (
+        n === MutexoEventIndex.free ||
+        n === MutexoEventIndex.lock ||
+        n === MutexoEventIndex.input ||
+        n === MutexoEventIndex.output
+    );
+}
+
 export function mutexoEventNameToIndex( evtName: MutexoEventName ): MutexoEventIndex
 {
     if( !isMutexoEventName( evtName ) ) throw new Error( "invalid event name" );

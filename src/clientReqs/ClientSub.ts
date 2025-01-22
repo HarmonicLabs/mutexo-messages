@@ -1,12 +1,13 @@
 import { CanBeCborString, Cbor, CborArray, CborObj, CborString, CborUInt, forceCborString, ToCbor, ToCborObj } from "@harmoniclabs/cbor";
 import { Filter, filterFromCborObj, forceFilter, IFilter } from "./filters/Filter";
 import { isObject } from "@harmoniclabs/obj-utils";
+import { isMutexoChainEventIndex, MutexoChainEventIndex } from "../events";
 
 const CLIENT_SUB_TYPE = 2;
 
 export interface IClientSub {
     id: number;
-    eventType: number;
+    chainEventIndex: MutexoChainEventIndex;
     filters: IFilter[];
 }
 
@@ -15,7 +16,7 @@ function isIClientSub( stuff: any ): stuff is IClientSub
     return(
         isObject( stuff ) &&
         typeof stuff.id === "number" &&
-        typeof stuff.eventType === "number" &&
+        isMutexoChainEventIndex( stuff.chainEventIndex ) &&
         Array.isArray( stuff.filters )
     );
 }
@@ -23,14 +24,14 @@ function isIClientSub( stuff: any ): stuff is IClientSub
 export class ClientSub implements ToCbor, ToCborObj, IClientSub 
 {
     readonly id: number;
-    readonly eventType: number;
+    readonly chainEventIndex: MutexoChainEventIndex;
     readonly filters: Filter[];
 
     constructor( stuff: IClientSub ) {
         if(!( isIClientSub( stuff ) )) throw new Error( "invalid `ClientSub` data provided" );
 
         this.id = stuff.id;
-        this.eventType = stuff.eventType;
+        this.chainEventIndex = stuff.chainEventIndex;
         this.filters = stuff.filters.map( forceFilter ); 
     }
 
@@ -46,7 +47,7 @@ export class ClientSub implements ToCbor, ToCborObj, IClientSub
         return new CborArray([
             new CborUInt( CLIENT_SUB_TYPE ),
             new CborUInt( this.id ),
-            new CborUInt( this.eventType ),
+            new CborUInt( this.chainEventIndex ),
             new CborArray( this.filters.map(( filter ) => ( filter.toCborObj() )) )
         ]);
     }
@@ -78,7 +79,7 @@ export class ClientSub implements ToCbor, ToCborObj, IClientSub
         
         return new ClientSub({ 
             id: Number( cborId.num ),
-            eventType: Number( cborEventType.num ), 
+            chainEventIndex: Number( cborEventType.num ), 
             filters: cborFilters.array.map( filterFromCborObj )
         });
     }
